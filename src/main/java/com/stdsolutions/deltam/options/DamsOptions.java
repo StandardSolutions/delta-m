@@ -16,7 +16,19 @@ public class DamsOptions extends Options {
     }
 
     public String schema() {
-        return map.getOrDefault("db-schema", "public");
+        return map.getOrDefault("schema-name", "public");
+    }
+
+    public long lockId() {
+        return UUID
+                .nameUUIDFromBytes("delta-m".getBytes(java.nio.charset.StandardCharsets.UTF_8))
+                .getMostSignificantBits();
+    }
+
+    public String lockTableName() {
+        return new SqlIdentifierSanitized(
+                map.getOrDefault("lock-table-name", "delta_m_lock")
+        ).value();
     }
 
     /**
@@ -28,23 +40,12 @@ public class DamsOptions extends Options {
                 .orElse(60_000);
     }
 
-    public long lockId() {
-        return UUID
-                .nameUUIDFromBytes("dams-publisher-core".getBytes(java.nio.charset.StandardCharsets.UTF_8))
-                .getMostSignificantBits();
-    }
-
     public String changeLogTableName() {
         return new SqlIdentifierSanitized(
-                map.getOrDefault("db-changelog-table-name", "dams_3db_changelog")
+                map.getOrDefault("changelog-table-name", "delta_m_changelog")
         ).value();
     }
 
-    public String lockTableName() {
-        return new SqlIdentifierSanitized(
-                map.getOrDefault("db-lock-table-name", "dams_db_lock")
-        ).value();
-    }
 
     public String migrationPath() {
         return map.getOrDefault("migration-path", "db/delta-m");

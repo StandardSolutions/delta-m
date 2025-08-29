@@ -27,7 +27,7 @@ public final class DeltaM {
             try (AdvisoryLock lock = db.newLock(c, options)) {
                 lock.acquire();
 
-                ChangeLog changeLog = db.changelog();
+                ChangeLog changeLog = db.changelog(options);
                 changeLog.ensureExist(c);
 
                 MigrationLoader migrationLoader = new MigrationLoader(options, metadata.type());

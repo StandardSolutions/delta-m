@@ -58,10 +58,10 @@ class DamsPublisherCoreH2Test {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
             
-            // Проверяем таблицу changelog
+            // Проверяем таблицу changelog - H2 создает таблицы в верхнем регистре
             ResultSet resultSet = statement.executeQuery(
                 "SELECT table_name FROM information_schema.tables " +
-                "WHERE table_name = 'DAMS_3DB_CHANGELOG'"
+                "WHERE table_name = 'DELTA_M_CHANGELOG'"
             );
             assertTrue(resultSet.next(), "Changelog table should be created");
         }
@@ -81,7 +81,7 @@ class DamsPublisherCoreH2Test {
             
             ResultSet resultSet = statement.executeQuery(
                 "SELECT COUNT(*) FROM information_schema.tables " +
-                "WHERE table_name = 'DAMS_3DB_CHANGELOG'"
+                "WHERE table_name = 'DELTA_M_CHANGELOG'"
             );
             assertTrue(resultSet.next());
             assertEquals(1, resultSet.getInt(1), "Changelog table should exist");
