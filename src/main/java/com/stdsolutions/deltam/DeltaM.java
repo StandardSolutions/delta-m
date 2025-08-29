@@ -8,13 +8,13 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public final class DamsMigration {
+public final class DeltaM {
 
     private final DataSource dataSource;
 
     private final String[] args;
 
-    public DamsMigration(final DataSource dataSource, final String... args) {
+    public DeltaM(final DataSource dataSource, final String... args) {
         this.dataSource = dataSource;
         this.args = args;
     }

@@ -96,6 +96,7 @@ public final class MigrationLoader {
     private String processTemplate(String content, DamsOptions options) {
         String result = content
                 .replace("${CHANGELOG_TABLE}", options.changeLogTableName())
+                .replace("${changelog_table}", options.changeLogTableName())
                 .replace("${LOCK_TABLE}", options.lockTableName())
                 .replace("${SCHEMA}", options.schema());
         
