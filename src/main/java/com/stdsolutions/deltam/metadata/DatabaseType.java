@@ -21,7 +21,7 @@ public enum DatabaseType {
     public static DatabaseType ofJdbcUrl(String jdbcUrl) {
         if (jdbcUrl.startsWith("jdbc:postgresql:")) return POSTGRESQL;
         if (jdbcUrl.startsWith("jdbc:h2:")) return H2;
-        throw new UnsupportedDialectException("Supported Database: PostgreSQL, H2. jdbcUrl: " + jdbcUrl);
+        throw new UnsupportedDatabaseException("Supported Database: PostgreSQL, H2. jdbcUrl: " + jdbcUrl);
     }
 
     /**
@@ -36,6 +36,6 @@ public enum DatabaseType {
                 return databaseType;
             }
         }
-        throw new UnsupportedDialectException("Supported Database: PostgreSQL, H2. Current database: " + productName);
+        throw new UnsupportedDatabaseException("Supported Database: PostgreSQL, H2. Current database: " + productName);
     }
 }
