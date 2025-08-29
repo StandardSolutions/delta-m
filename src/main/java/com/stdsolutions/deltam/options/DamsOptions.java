@@ -47,7 +47,7 @@ public class DamsOptions extends Options {
     }
 
     public String migrationPath() {
-        return map.getOrDefault("migration-path", "migrations");
+        return map.getOrDefault("migration-path", "db/delta-m");
     }
 
     public String tableName(String tableName) {
