@@ -31,7 +31,8 @@ mvn clean
 ### Core Components
 
 - **DeltaM**: Main entry point that orchestrates migration execution using Probe → Apply → Verify flow
-- **MigrationLoader**: Loads SQL migration files from classpath resources, supports template substitution
+- **MigrationLoader**: Loads SQL migration files from classpath resources with automatic discovery, supports universal template substitution via `${variable}` syntax
+- **SqlMigrationStep**: Executes SQL migration files with support for multi-statement execution
 - **Database**: Interface for database-specific implementations (PostgreSQL, H2)
 - **AdvisoryLock**: Database-specific locking mechanism for multi-instance safety
 - **ChangeLog**: Tracks executed migrations to prevent re-execution
@@ -44,8 +45,10 @@ mvn clean
 ### Migration File Structure
 
 - Migration files follow pattern: `{number}__{description}.sql` (e.g., `001__create_changelog_table.sql`)
-- Located in `src/main/resources/migrations/` (PostgreSQL) or `src/main/resources/h2-migrations/` (H2)
-- Support template variables: `${CHANGELOG_TABLE}`, `${LOCK_TABLE}`, `${SCHEMA}`, `${name}`
+- Located in `src/main/resources/migrations/{database_type}/` where `{database_type}` is `postgresql`, `h2`, etc.
+- Automatic discovery: Files are discovered automatically from JAR or filesystem using universal resource scanning
+- Template variables: All `${variable}` patterns are resolved via `DamsOptions.tableName()` method
+- Multi-statement support: SQL files can contain multiple statements separated by semicolons
 
 ### Options System
 
@@ -76,3 +79,13 @@ All migrations must be idempotent:
 3. **Advisory Locking**: Single connection with advisory lock prevents parallel execution
 4. **Transactional Safety**: Each migration step is atomic
 5. **Database-Agnostic**: Interface-based design supports multiple database types
+6. **Universal Template System**: Single `${variable}` pattern handles all template substitutions
+7. **Automatic Discovery**: Migration files are discovered automatically without hardcoded lists
+
+## Recent Improvements
+
+### MigrationLoader Enhancements
+- **Universal Resource Discovery**: Automatic scanning of migration files from both JAR and filesystem
+- **Simplified Template Processing**: Single generic pattern `${variable}` replaces multiple hardcoded replacements
+- **Modular Design**: `SqlMigrationStep` extracted to separate class for better maintainability
+- **Elimination of Hardcoded Suffixes**: No more predefined file name patterns, supports any migration file names following the `{number}__{description}.sql` pattern

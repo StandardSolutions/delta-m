@@ -1,18 +1,25 @@
-package com.stdsolutions.deltam;
+package com.stdsolutions.deltam.migration;
 
+import com.stdsolutions.deltam.MigrationStep;
 import com.stdsolutions.deltam.metadata.DatabaseType;
 import com.stdsolutions.deltam.options.DamsOptions;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.JarURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public final class MigrationLoader {
 
@@ -37,9 +44,7 @@ public final class MigrationLoader {
             return migrations;
         }
 
-        String[] migrationFiles = findMigrationFiles(classLoader, migrationsPath);
-        
-        Arrays.sort(migrationFiles); // Sort by filename to ensure order
+        String[] migrationFiles = findMigrationFiles(migrationsUrl, migrationsPath);
         
         for (String fileName : migrationFiles) {
             Matcher matcher = MIGRATION_FILE_PATTERN.matcher(fileName);
@@ -49,11 +54,10 @@ public final class MigrationLoader {
                 String content = loadMigrationContent(classLoader, migrationsPath, fileName);
                 String processedContent = processTemplate(content, options);
                 
-                migrations.add(new FileMigrationStep(
+                migrations.add(new SqlMigrationStep(
                     migrationNumber + "_" + migrationName,
                     migrationName.replace("_", " "),
-                    processedContent,
-                    options
+                    processedContent
                 ));
             }
         }
@@ -61,29 +65,72 @@ public final class MigrationLoader {
         return migrations;
     }
 
-    private String[] findMigrationFiles(ClassLoader classLoader, String migrationsPath) {
+    private String[] findMigrationFiles(URL migrationsUrl, String migrationsPath) {
+        try {
+            URI uri = migrationsUrl.toURI();
+            List<String> migrationFiles = new ArrayList<>();
+
+            if ("jar".equals(uri.getScheme())) {
+                // Running from JAR
+                migrationFiles = findMigrationFilesInJar(migrationsUrl, migrationsPath);
+            } else {
+                // Running from filesystem (development)
+                migrationFiles = findMigrationFilesInFileSystem(uri, migrationsPath);
+            }
+
+            return migrationFiles.stream()
+                    .filter(filename -> MIGRATION_FILE_PATTERN.matcher(filename).matches())
+                    .sorted()
+                    .toArray(String[]::new);
+
+        } catch (URISyntaxException | IOException e) {
+            throw new RuntimeException("Failed to discover migration files", e);
+        }
+    }
+
+    private List<String> findMigrationFilesInJar(URL resource, String migrationsPath) throws IOException {
         List<String> files = new ArrayList<>();
+        JarURLConnection jarConnection = (JarURLConnection) resource.openConnection();
         
-        // Try to find migration files by checking known patterns
-        for (int i = 1; i <= 100; i++) {
-            String fileName = String.format("%03d__", i);
-            String[] possibleSuffixes = {
-                "create_changelog_table.sql",
-                "create_recipient_table.sql", 
-                "create_outbox_table.sql",
-                "create_message_type_table.sql",
-                "create_recipient_message_type_table.sql"
-            };
+        try (JarFile jarFile = jarConnection.getJarFile()) {
+            String pathWithSlash = migrationsPath.endsWith("/") ? migrationsPath : migrationsPath + "/";
             
-            for (String suffix : possibleSuffixes) {
-                String fullFileName = fileName + suffix;
-                if (classLoader.getResource(Paths.get(migrationsPath, fullFileName).toString().replace('\\', '/')) != null) {
-                    files.add(fullFileName);
+            Enumeration<JarEntry> entries = jarFile.entries();
+            while (entries.hasMoreElements()) {
+                JarEntry entry = entries.nextElement();
+                String entryName = entry.getName();
+                
+                if (entryName.startsWith(pathWithSlash) && 
+                    entryName.endsWith(".sql") && 
+                    !entry.isDirectory()) {
+                    
+                    String fileName = entryName.substring(pathWithSlash.length());
+                    if (!fileName.contains("/")) { // Only direct files, not subdirectories
+                        files.add(fileName);
+                    }
                 }
             }
         }
         
-        return files.toArray(new String[0]);
+        return files;
+    }
+
+    private List<String> findMigrationFilesInFileSystem(URI uri, String migrationsPath) throws IOException {
+        List<String> files = new ArrayList<>();
+        Path migrationDir = Paths.get(uri);
+        
+        if (Files.exists(migrationDir) && Files.isDirectory(migrationDir)) {
+            try (Stream<Path> paths = Files.list(migrationDir)) {
+                files = paths
+                        .filter(Files::isRegularFile)
+                        .filter(path -> path.toString().endsWith(".sql"))
+                        .map(path -> path.getFileName().toString())
+                        .sorted()
+                        .toList();
+            }
+        }
+        
+        return files;
     }
 
     private String loadMigrationContent(ClassLoader classLoader, String migrationsPath, String fileName) throws IOException {
@@ -97,15 +144,8 @@ public final class MigrationLoader {
     }
 
     private String processTemplate(String content, DamsOptions options) {
-        String result = content
-                .replace("${CHANGELOG_TABLE}", options.changeLogTableName())
-                .replace("${changelog_table}", options.changeLogTableName())
-                .replace("${LOCK_TABLE}", options.lockTableName())
-                .replace("${SCHEMA}", options.schema());
-        
-        // Process generic patterns like ${name}
         Pattern namePattern = Pattern.compile("\\$\\{([^}]+)\\}");
-        Matcher matcher = namePattern.matcher(result);
+        Matcher matcher = namePattern.matcher(content);
         StringBuffer sb = new StringBuffer();
         
         while (matcher.find()) {
@@ -124,39 +164,4 @@ public final class MigrationLoader {
         return basePath + "/" + dbTypePath;
     }
 
-    private static class FileMigrationStep implements MigrationStep {
-        private final String id;
-        private final String description;
-        private final String sql;
-
-        public FileMigrationStep(String id, String description, String sql, DamsOptions options) {
-            this.id = id;
-            this.description = description;
-            this.sql = sql;
-        }
-
-        @Override
-        public String id() {
-            return id;
-        }
-
-        @Override
-        public String description() {
-            return description;
-        }
-
-        @Override
-        public void execute(Connection connection) throws SQLException {
-            try (var stmt = connection.createStatement()) {
-                // Split SQL by semicolons and execute each statement
-                String[] statements = sql.split(";");
-                for (String statement : statements) {
-                    String trimmed = statement.trim();
-                    if (!trimmed.isEmpty()) {
-                        stmt.execute(trimmed);
-                    }
-                }
-            }
-        }
-    }
 }

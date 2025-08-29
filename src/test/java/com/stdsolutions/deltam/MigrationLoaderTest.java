@@ -1,8 +1,9 @@
 package com.stdsolutions.deltam;
 
 import com.stdsolutions.deltam.metadata.DatabaseType;
-import org.junit.jupiter.api.Test;
+import com.stdsolutions.deltam.migration.MigrationLoader;
 import com.stdsolutions.deltam.options.DamsOptions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,19 +16,19 @@ class MigrationLoaderTest {
     void testStepsFromResources() throws IOException {
         DamsOptions options = new DamsOptions();
         MigrationLoader loader = new MigrationLoader(options, DatabaseType.H2);
-        
+
         List<MigrationStep> migrations = loader.steps();
-        
+
         // Проверяем, что миграции загружены
         assertNotNull(migrations, "Migrations list should not be null");
         assertTrue(migrations.size() >= 0, "Should load migrations from resources");
-        
+
         // Проверяем миграции по порядку
         for (int i = 0; i < migrations.size() - 1; i++) {
             String currentId = migrations.get(i).id();
             String nextId = migrations.get(i + 1).id();
-            assertTrue(currentId.compareTo(nextId) < 0, 
-                "Migrations should be sorted by id: " + currentId + " should come before " + nextId);
+            assertTrue(currentId.compareTo(nextId) < 0,
+                    "Migrations should be sorted by id: " + currentId + " should come before " + nextId);
         }
     }
 
@@ -35,9 +36,9 @@ class MigrationLoaderTest {
     void testMigrationStepProperties() throws IOException {
         DamsOptions options = new DamsOptions();
         MigrationLoader loader = new MigrationLoader(options, DatabaseType.H2);
-        
+
         List<MigrationStep> migrations = loader.steps();
-        
+
         for (MigrationStep migration : migrations) {
             assertNotNull(migration.id(), "Migration id should not be null");
             assertNotNull(migration.description(), "Migration description should not be null");
@@ -51,36 +52,30 @@ class MigrationLoaderTest {
         // Test custom migration path option
         DamsOptions options = new DamsOptions("--migration-path=custom/migrations");
         MigrationLoader loader = new MigrationLoader(options, DatabaseType.H2);
-        
+
         List<MigrationStep> migrations = loader.steps();
-        
-        // Should return empty list for non-existent path
+
         assertNotNull(migrations, "Migrations list should not be null");
         assertEquals(0, migrations.size(), "Should return empty list for non-existent path");
-        
-        // Test default path
+
         DamsOptions defaultOptions = new DamsOptions();
         MigrationLoader defaultLoader = new MigrationLoader(defaultOptions, DatabaseType.H2);
-        
+
         List<MigrationStep> defaultMigrations = defaultLoader.steps();
         assertNotNull(defaultMigrations, "Default migrations list should not be null");
     }
 
     @Test
     void testTemplateProcessing() throws IOException {
-        DamsOptions options = new DamsOptions("--db-table-prefix=test_");
+        DamsOptions options = new DamsOptions();
         MigrationLoader loader = new MigrationLoader(options, DatabaseType.H2);
-        
+
         List<MigrationStep> migrations = loader.steps();
-        
-        // Проверяем, что найдены миграции и они содержат обработанные шаблоны
-        if (!migrations.isEmpty()) {
-            // Проверяем что в описании миграций нет необработанных шаблонов ${...}
-            for (MigrationStep migration : migrations) {
-                String description = migration.description();
-                assertFalse(description.contains("${"), 
+
+        for (MigrationStep migration : migrations) {
+            String description = migration.description();
+            assertFalse(description.contains("${"),
                     "Migration description should not contain unprocessed templates: " + description);
-            }
         }
     }
 }
