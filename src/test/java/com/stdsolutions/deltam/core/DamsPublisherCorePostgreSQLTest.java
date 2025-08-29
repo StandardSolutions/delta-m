@@ -1,5 +1,6 @@
 package com.stdsolutions.deltam.core;
 
+import com.stdsolutions.deltam.DeltaM;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -28,7 +29,7 @@ class DamsPublisherCorePostgreSQLTest {
             .withPassword("test");
 
     private DataSource dataSource;
-    private DamsPublisherCore damsPublisherCore;
+    private DeltaM deltaM;
 
     @BeforeEach
     void setUp() throws SQLException {
@@ -47,7 +48,7 @@ class DamsPublisherCorePostgreSQLTest {
         pgDataSource.setCurrentSchema("dams");
         dataSource = pgDataSource;
         // Настраиваем имена таблиц для PostgreSQL
-        damsPublisherCore = new DamsPublisherCore(dataSource, 
+        deltaM = new DeltaM(dataSource, 
                 "--recipient_table=dams_recipient", 
                 "--outbox_table=dams_outbox");
     }
@@ -75,7 +76,7 @@ class DamsPublisherCorePostgreSQLTest {
         }
 
         // Выполняем основной метод
-        assertDoesNotThrow(() -> damsPublisherCore.execute());
+        assertDoesNotThrow(() -> deltaM.init());
 
         // Проверяем, что таблица recipient была создана
         try (Connection connection = dataSource.getConnection();
@@ -125,10 +126,10 @@ class DamsPublisherCorePostgreSQLTest {
     @Test
     void testExecuteMultipleTimesIsIdempotent() throws SQLException {
         // Первый запуск должен пройти успешно
-        assertDoesNotThrow(() -> damsPublisherCore.execute());
+        assertDoesNotThrow(() -> deltaM.init());
         
         // Второй запуск также должен пройти успешно (idempotent)
-        assertDoesNotThrow(() -> damsPublisherCore.execute());
+        assertDoesNotThrow(() -> deltaM.init());
         
         // Проверяем, что все таблицы все еще существуют
         try (Connection connection = dataSource.getConnection();
@@ -157,7 +158,7 @@ class DamsPublisherCorePostgreSQLTest {
     @Test
     void testDataSourceNotNull() {
         assertNotNull(dataSource, "DataSource should not be null");
-        assertNotNull(damsPublisherCore, "DamsPublisherCore should not be null");
+        assertNotNull(deltaM, "DeltaM should not be null");
     }
 
     @Test
@@ -176,9 +177,9 @@ class DamsPublisherCorePostgreSQLTest {
 
     @Disabled
     @Test
-    void testTableStructure() throws SQLException {
+    void testTableStructure() throws Exception {
         // Выполняем основной метод
-        damsPublisherCore.execute();
+        deltaM.init();
         
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
@@ -210,9 +211,9 @@ class DamsPublisherCorePostgreSQLTest {
 
     @Disabled
     @Test
-    void testPostgreSQLSpecificFeatures() throws SQLException {
+    void testPostgreSQLSpecificFeatures() throws Exception {
         // Выполняем основной метод
-        damsPublisherCore.execute();
+        deltaM.init();
         
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {

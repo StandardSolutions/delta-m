@@ -1,5 +1,6 @@
 package com.stdsolutions.deltam.core;
 
+import com.stdsolutions.deltam.DeltaM;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class DamsPublisherCoreH2Test {
 
     private DataSource dataSource;
-    private DamsPublisherCore damsPublisherCore;
+    private DeltaM deltaM;
 
     @BeforeEach
     void setUp() {
@@ -28,7 +29,7 @@ class DamsPublisherCoreH2Test {
         
         dataSource = h2DataSource;
         // Используем H2-совместимые миграции
-        damsPublisherCore = new DamsPublisherCore(dataSource, "--migration-path=h2-migrations");
+        deltaM = new DeltaM(dataSource, "--migration-path=h2-migrations");
     }
 
     @AfterEach
@@ -36,8 +37,7 @@ class DamsPublisherCoreH2Test {
         // Очищаем созданные таблицы после каждого теста
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
-            statement.execute("DROP TABLE IF EXISTS dams_changelog_table CASCADE");
-            statement.execute("DROP TABLE IF EXISTS schema_initialization_lock CASCADE");
+            statement.execute("DROP ALL OBJECTS");
         }
     }
 
@@ -52,35 +52,28 @@ class DamsPublisherCoreH2Test {
         }
 
         // Выполняем основной метод
-        assertDoesNotThrow(() -> damsPublisherCore.execute());
+        assertDoesNotThrow(() -> deltaM.init());
 
         // Проверяем, что таблицы были созданы
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
             
-            // Проверяем таблицу dams_changelog_table
+            // Проверяем таблицу changelog
             ResultSet resultSet = statement.executeQuery(
                 "SELECT table_name FROM information_schema.tables " +
-                "WHERE table_name = 'DAMS_CHANGELOG_TABLE'"
+                "WHERE table_name = 'DAMS_3DB_CHANGELOG'"
             );
-            assertTrue(resultSet.next(), "Table 'DAMS_CHANGELOG_TABLE' should be created");
-            
-            // Проверяем таблицу schema_initialization_lock
-            resultSet = statement.executeQuery(
-                "SELECT table_name FROM information_schema.tables " +
-                "WHERE table_name = 'SCHEMA_INITIALIZATION_LOCK'"
-            );
-            assertTrue(resultSet.next(), "Table 'SCHEMA_INITIALIZATION_LOCK' should be created");
+            assertTrue(resultSet.next(), "Changelog table should be created");
         }
     }
 
     @Test
     void testExecuteMultipleTimes() throws SQLException {
         // Первый запуск должен пройти успешно
-        assertDoesNotThrow(() -> damsPublisherCore.execute());
+        assertDoesNotThrow(() -> deltaM.init());
         
         // Второй запуск также должен пройти успешно (idempotent)
-        assertDoesNotThrow(() -> damsPublisherCore.execute());
+        assertDoesNotThrow(() -> deltaM.init());
         
         // Проверяем, что таблицы все еще существуют
         try (Connection connection = dataSource.getConnection();
@@ -88,10 +81,10 @@ class DamsPublisherCoreH2Test {
             
             ResultSet resultSet = statement.executeQuery(
                 "SELECT COUNT(*) FROM information_schema.tables " +
-                "WHERE table_name IN ('DAMS_CHANGELOG_TABLE', 'SCHEMA_INITIALIZATION_LOCK')"
+                "WHERE table_name = 'DAMS_3DB_CHANGELOG'"
             );
             assertTrue(resultSet.next());
-            assertEquals(2, resultSet.getInt(1), "Both tables should still exist");
+            assertEquals(1, resultSet.getInt(1), "Changelog table should exist");
         }
     }
 
@@ -108,7 +101,7 @@ class DamsPublisherCoreH2Test {
     @Test
     void testDataSourceNotNull() {
         assertNotNull(dataSource, "DataSource should not be null");
-        assertNotNull(damsPublisherCore, "DamsPublisherCore should not be null");
+        assertNotNull(deltaM, "DeltaM should not be null");
     }
 
     @Test
