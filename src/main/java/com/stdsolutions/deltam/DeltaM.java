@@ -30,7 +30,7 @@ public final class DeltaM {
                 ChangeLog changeLog = db.changelog();
                 changeLog.ensureExist(c);
 
-                MigrationLoader migrationLoader = new MigrationLoader(options);
+                MigrationLoader migrationLoader = new MigrationLoader(options, metadata.type());
                 for (MigrationStep migration : migrationLoader.steps()) {
                     if (changeLog.has(c, migration)) {
                         continue;

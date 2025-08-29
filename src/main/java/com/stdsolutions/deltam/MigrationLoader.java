@@ -1,5 +1,6 @@
 package com.stdsolutions.deltam;
 
+import com.stdsolutions.deltam.metadata.DatabaseType;
 import com.stdsolutions.deltam.options.DamsOptions;
 
 import java.io.IOException;
@@ -18,15 +19,17 @@ public final class MigrationLoader {
     private static final Pattern MIGRATION_FILE_PATTERN = Pattern.compile("(\\d+)__(.+)\\.sql");
 
     private final DamsOptions options;
+    private final DatabaseType databaseType;
 
-    public MigrationLoader(final DamsOptions options) {
+    public MigrationLoader(final DamsOptions options, final DatabaseType databaseType) {
         this.options = options;
+        this.databaseType = databaseType;
     }
 
     public List<MigrationStep> steps() throws IOException {
         List<MigrationStep> migrations = new ArrayList<>();
         
-        String migrationsPath = options.migrationPath();
+        String migrationsPath = buildMigrationPath();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         URL migrationsUrl = classLoader.getResource(migrationsPath);
         
@@ -113,6 +116,12 @@ public final class MigrationLoader {
         matcher.appendTail(sb);
         
         return sb.toString();
+    }
+    
+    private String buildMigrationPath() {
+        String basePath = options.migrationPath();
+        String dbTypePath = databaseType.name().toLowerCase();
+        return basePath + "/" + dbTypePath;
     }
 
     private static class FileMigrationStep implements MigrationStep {

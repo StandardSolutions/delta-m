@@ -1,5 +1,6 @@
 package com.stdsolutions.deltam;
 
+import com.stdsolutions.deltam.metadata.DatabaseType;
 import org.junit.jupiter.api.Test;
 import com.stdsolutions.deltam.options.DamsOptions;
 
@@ -13,7 +14,7 @@ class MigrationLoaderTest {
     @Test
     void testStepsFromResources() throws IOException {
         DamsOptions options = new DamsOptions();
-        MigrationLoader loader = new MigrationLoader(options);
+        MigrationLoader loader = new MigrationLoader(options, DatabaseType.H2);
         
         List<MigrationStep> migrations = loader.steps();
         
@@ -33,7 +34,7 @@ class MigrationLoaderTest {
     @Test
     void testMigrationStepProperties() throws IOException {
         DamsOptions options = new DamsOptions();
-        MigrationLoader loader = new MigrationLoader(options);
+        MigrationLoader loader = new MigrationLoader(options, DatabaseType.H2);
         
         List<MigrationStep> migrations = loader.steps();
         
@@ -49,7 +50,7 @@ class MigrationLoaderTest {
     void testCustomMigrationsPath() throws IOException {
         // Test custom migration path option
         DamsOptions options = new DamsOptions("--migration-path=custom/migrations");
-        MigrationLoader loader = new MigrationLoader(options);
+        MigrationLoader loader = new MigrationLoader(options, DatabaseType.H2);
         
         List<MigrationStep> migrations = loader.steps();
         
@@ -59,7 +60,7 @@ class MigrationLoaderTest {
         
         // Test default path
         DamsOptions defaultOptions = new DamsOptions();
-        MigrationLoader defaultLoader = new MigrationLoader(defaultOptions);
+        MigrationLoader defaultLoader = new MigrationLoader(defaultOptions, DatabaseType.H2);
         
         List<MigrationStep> defaultMigrations = defaultLoader.steps();
         assertNotNull(defaultMigrations, "Default migrations list should not be null");
@@ -68,7 +69,7 @@ class MigrationLoaderTest {
     @Test
     void testTemplateProcessing() throws IOException {
         DamsOptions options = new DamsOptions("--db-table-prefix=test_");
-        MigrationLoader loader = new MigrationLoader(options);
+        MigrationLoader loader = new MigrationLoader(options, DatabaseType.H2);
         
         List<MigrationStep> migrations = loader.steps();
         

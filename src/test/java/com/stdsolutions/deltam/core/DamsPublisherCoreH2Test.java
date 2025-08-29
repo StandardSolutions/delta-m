@@ -29,7 +29,7 @@ class DamsPublisherCoreH2Test {
         
         dataSource = h2DataSource;
         // Используем H2-совместимые миграции
-        deltaM = new DeltaM(dataSource, "--migration-path=h2-migrations");
+        deltaM = new DeltaM(dataSource);
     }
 
     @AfterEach
