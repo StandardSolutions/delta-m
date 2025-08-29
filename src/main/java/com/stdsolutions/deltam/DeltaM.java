@@ -1,6 +1,7 @@
 package com.stdsolutions.deltam;
 
 import com.stdsolutions.deltam.metadata.DatabaseMetadata;
+import com.stdsolutions.deltam.migration.MigrationLoader;
 import com.stdsolutions.deltam.options.DamsOptions;
 
 import javax.sql.DataSource;
