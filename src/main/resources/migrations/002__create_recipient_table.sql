@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS ${recipient_table} (
+    id VARCHAR(255) PRIMARY KEY,
+    enabled BOOLEAN DEFAULT false,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);

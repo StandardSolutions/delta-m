@@ -1,0 +1,236 @@
+package com.stdsolutions.deltam.core;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.postgresql.ds.PGSimpleDataSource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@Testcontainers
+class DamsPublisherCorePostgreSQLTest {
+
+    @Container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
+            .withDatabaseName("postgres")
+            .withUsername("test")
+            .withPassword("test");
+
+    private DataSource dataSource;
+    private DamsPublisherCore damsPublisherCore;
+
+    @BeforeEach
+    void setUp() throws SQLException {
+        // Создаем DataSource для TestContainers PostgreSQL базы данных
+        PGSimpleDataSource pgDataSource = new PGSimpleDataSource();
+        pgDataSource.setUrl(postgres.getJdbcUrl());
+        pgDataSource.setUser(postgres.getUsername());
+        pgDataSource.setPassword(postgres.getPassword());
+        
+        // Создаем схему dams, если она не существует
+        try (Connection connection = pgDataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute("CREATE SCHEMA IF NOT EXISTS dams");
+        }
+        
+        pgDataSource.setCurrentSchema("dams");
+        dataSource = pgDataSource;
+        // Настраиваем имена таблиц для PostgreSQL
+        damsPublisherCore = new DamsPublisherCore(dataSource, 
+                "--recipient_table=dams_recipient", 
+                "--outbox_table=dams_outbox");
+    }
+
+    @AfterEach
+    void tearDown() throws SQLException {
+        // Очищаем созданные таблицы после каждого теста
+//        try (Connection connection = dataSource.getConnection();
+//             Statement statement = connection.createStatement()) {
+//            statement.execute("DROP TABLE IF EXISTS dams_changelog_table CASCADE");
+//            statement.execute("DROP TABLE IF EXISTS schema_initialization_lock CASCADE");
+//            statement.execute("DROP TABLE IF EXISTS outbox_message CASCADE");
+//            statement.execute("DROP TABLE IF EXISTS schema_version CASCADE");
+//        }
+    }
+
+    @Test
+    void testExecuteCreatesRequiredTables() throws SQLException {
+        // Проверяем, что база данных действительно PostgreSQL
+        try (Connection connection = dataSource.getConnection()) {
+            DatabaseMetaData metaData = connection.getMetaData();
+            String productName = metaData.getDatabaseProductName();
+            assertTrue(productName.toLowerCase().contains("postgresql"), 
+                "Database should be PostgreSQL, but was: " + productName);
+        }
+
+        // Выполняем основной метод
+        assertDoesNotThrow(() -> damsPublisherCore.execute());
+
+        // Проверяем, что таблица recipient была создана
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(
+                "SELECT table_name FROM information_schema.tables " +
+                "WHERE table_name = 'dams_recipient' AND table_schema = 'dams'"
+            );
+            assertTrue(resultSet.next(), "Table 'recipient' should be created");
+        }
+
+//        // Проверяем, что все необходимые таблицы были созданы
+//        try (Connection connection = dataSource.getConnection();
+//             Statement statement = connection.createStatement()) {
+//
+//            // Проверяем таблицу dams_changelog_table
+//            ResultSet resultSet = statement.executeQuery(
+//                "SELECT table_name FROM information_schema.tables " +
+//                "WHERE table_name = 'dams_changelog_table' AND table_schema = 'public'"
+//            );
+//            assertTrue(resultSet.next(), "Table 'dams_changelog_table' should be created");
+//
+//            // Проверяем таблицу schema_initialization_lock
+//            resultSet = statement.executeQuery(
+//                "SELECT table_name FROM information_schema.tables " +
+//                "WHERE table_name = 'schema_initialization_lock' AND table_schema = 'public'"
+//            );
+//            assertTrue(resultSet.next(), "Table 'schema_initialization_lock' should be created");
+//
+//            // Проверяем таблицу outbox_message
+//            resultSet = statement.executeQuery(
+//                "SELECT table_name FROM information_schema.tables " +
+//                "WHERE table_name = 'outbox_message' AND table_schema = 'public'"
+//            );
+//            assertTrue(resultSet.next(), "Table 'outbox_message' should be created");
+//
+//            // Проверяем таблицу schema_version
+//            resultSet = statement.executeQuery(
+//                "SELECT table_name FROM information_schema.tables " +
+//                "WHERE table_name = 'schema_version' AND table_schema = 'public'"
+//            );
+//            assertTrue(resultSet.next(), "Table 'schema_version' should be created");
+//        }
+    }
+
+    @Disabled
+    @Test
+    void testExecuteMultipleTimesIsIdempotent() throws SQLException {
+        // Первый запуск должен пройти успешно
+        assertDoesNotThrow(() -> damsPublisherCore.execute());
+        
+        // Второй запуск также должен пройти успешно (idempotent)
+        assertDoesNotThrow(() -> damsPublisherCore.execute());
+        
+        // Проверяем, что все таблицы все еще существуют
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            
+            ResultSet resultSet = statement.executeQuery(
+                "SELECT COUNT(*) FROM information_schema.tables " +
+                "WHERE table_name IN ('dams_changelog_table', 'schema_initialization_lock', 'outbox_message', 'schema_version') " +
+                "AND table_schema = 'public'"
+            );
+            assertTrue(resultSet.next());
+            assertEquals(4, resultSet.getInt(1), "All 4 tables should still exist");
+        }
+    }
+
+    @Test
+    void testDatabaseConnection() {
+        assertDoesNotThrow(() -> {
+            try (Connection connection = dataSource.getConnection()) {
+                assertFalse(connection.isClosed());
+                assertTrue(connection.isValid(5));
+            }
+        });
+    }
+
+    @Test
+    void testDataSourceNotNull() {
+        assertNotNull(dataSource, "DataSource should not be null");
+        assertNotNull(damsPublisherCore, "DamsPublisherCore should not be null");
+    }
+
+    @Test
+    void testDatabaseTypeDetection() throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            DatabaseMetaData metaData = connection.getMetaData();
+            String productName = metaData.getDatabaseProductName();
+            String productVersion = metaData.getDatabaseProductVersion();
+            
+            assertNotNull(productName, "Database product name should not be null");
+            assertNotNull(productVersion, "Database product version should not be null");
+            assertTrue(productName.toLowerCase().contains("postgresql"), 
+                "Database should be PostgreSQL, but was: " + productName);
+        }
+    }
+
+    @Disabled
+    @Test
+    void testTableStructure() throws SQLException {
+        // Выполняем основной метод
+        damsPublisherCore.execute();
+        
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            
+            // Проверяем структуру таблицы dams_changelog_table
+            ResultSet resultSet = statement.executeQuery(
+                "SELECT column_name, data_type FROM information_schema.columns " +
+                "WHERE table_name = 'dams_changelog_table' AND table_schema = 'public' " +
+                "ORDER BY ordinal_position"
+            );
+            
+            assertTrue(resultSet.next());
+            assertEquals("id", resultSet.getString("column_name"));
+            assertEquals("integer", resultSet.getString("data_type"));
+            
+            assertTrue(resultSet.next());
+            assertEquals("version", resultSet.getString("column_name"));
+            assertEquals("character varying", resultSet.getString("data_type"));
+            
+            assertTrue(resultSet.next());
+            assertEquals("applied_at", resultSet.getString("column_name"));
+            assertEquals("timestamp with time zone", resultSet.getString("data_type"));
+            
+            assertTrue(resultSet.next());
+            assertEquals("description", resultSet.getString("column_name"));
+            assertEquals("text", resultSet.getString("data_type"));
+        }
+    }
+
+    @Disabled
+    @Test
+    void testPostgreSQLSpecificFeatures() throws SQLException {
+        // Выполняем основной метод
+        damsPublisherCore.execute();
+        
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            
+            // Проверяем, что таблицы созданы в правильной схеме (public)
+            ResultSet resultSet = statement.executeQuery(
+                "SELECT schemaname, tablename FROM pg_tables " +
+                "WHERE tablename IN ('dams_changelog_table', 'schema_initialization_lock') " +
+                "ORDER BY tablename"
+            );
+            
+            assertTrue(resultSet.next());
+            assertEquals("public", resultSet.getString("schemaname"));
+            assertEquals("dams_changelog_table", resultSet.getString("tablename"));
+            
+            assertTrue(resultSet.next());
+            assertEquals("public", resultSet.getString("schemaname"));
+            assertEquals("schema_initialization_lock", resultSet.getString("tablename"));
+        }
+    }
+}

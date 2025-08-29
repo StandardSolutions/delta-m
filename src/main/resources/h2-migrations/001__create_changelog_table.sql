@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS ${changelog_table} (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    version VARCHAR(255) NOT NULL,
+    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    description TEXT
+);
