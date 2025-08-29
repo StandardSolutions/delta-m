@@ -15,7 +15,7 @@ public final class H2Database implements Database {
     }
 
     @Override
-    public ChangeLog changelog() {
-        return new H2ChangeLog();
+    public ChangeLog changelog(DamsOptions options) {
+        return new H2ChangeLog(options);
     }
 }

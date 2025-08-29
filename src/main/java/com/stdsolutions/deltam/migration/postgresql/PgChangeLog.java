@@ -2,23 +2,54 @@ package com.stdsolutions.deltam.migration.postgresql;
 
 import com.stdsolutions.deltam.ChangeLog;
 import com.stdsolutions.deltam.MigrationStep;
+import com.stdsolutions.deltam.options.DamsOptions;
 
-import java.sql.Connection;
+import java.sql.*;
 
 public final class PgChangeLog implements ChangeLog {
-    @Override
-    public void ensureExist(Connection c) {
+    private final DamsOptions options;
 
-
+    public PgChangeLog(DamsOptions options) {
+        this.options = options;
     }
 
     @Override
-    public boolean has(Connection c, MigrationStep migration) {
-        return false;
+    public void ensureExist(Connection c) throws SQLException {
+        try (Statement stmt = c.createStatement()) {
+            stmt.execute(String.format("""
+                    CREATE TABLE IF NOT EXISTS %s (
+                        id VARCHAR(255) PRIMARY KEY,
+                        description VARCHAR(255) NOT NULL,
+                        executed_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+                    )
+                    """, options.changeLogTableName()));
+        }
     }
 
     @Override
-    public void append(Connection c, MigrationStep migration) {
+    public boolean has(Connection c, MigrationStep migration) throws SQLException {
+        String query = String.format(
+                "SELECT COUNT(*) FROM %s WHERE id = ?",
+                options.changeLogTableName()
+        );
+        try (PreparedStatement stmt = c.prepareStatement(query)) {
+            stmt.setString(1, migration.id());
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        }
+    }
 
+    @Override
+    public void append(Connection c, MigrationStep migration) throws SQLException {
+        String query = String.format(
+                "INSERT INTO %s (id, description) VALUES (?, ?)",
+                options.changeLogTableName()
+        );
+        try (PreparedStatement stmt = c.prepareStatement(query)) {
+            stmt.setString(1, migration.id());
+            stmt.setString(2, migration.description());
+            stmt.executeUpdate();
+        }
     }
 }

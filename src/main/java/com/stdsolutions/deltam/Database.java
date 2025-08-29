@@ -8,5 +8,5 @@ public interface Database {
 
     AdvisoryLock newLock(Connection c, DamsOptions options);
 
-    ChangeLog changelog();
+    ChangeLog changelog(DamsOptions options);
 }

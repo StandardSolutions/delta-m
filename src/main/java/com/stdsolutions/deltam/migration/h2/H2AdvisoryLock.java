@@ -19,12 +19,12 @@ public final class H2AdvisoryLock implements AdvisoryLock {
     public void acquire() throws SQLException {
         // Create lock table if it doesn't exist
         try (Statement stmt = conn.createStatement()) {
-            stmt.execute("""
-                CREATE TABLE IF NOT EXISTS SCHEMA_INITIALIZATION_LOCK (
+            stmt.execute(String.format("""
+                CREATE TABLE IF NOT EXISTS %s (
                     lock_key BIGINT PRIMARY KEY,
                     acquired_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
-                """);
+                """, options.lockTableName()));
         }
 
         // Try to acquire lock by inserting a row
@@ -33,7 +33,7 @@ public final class H2AdvisoryLock implements AdvisoryLock {
         
         while (remaining > 0) {
             try (PreparedStatement ps = conn.prepareStatement(
-                "INSERT INTO SCHEMA_INITIALIZATION_LOCK (lock_key) VALUES (?)")) {
+                String.format("INSERT INTO %s (lock_key) VALUES (?)", options.lockTableName()))) {
                 ps.setLong(1, lockKey);
                 ps.executeUpdate();
                 return; // Successfully acquired lock
@@ -56,7 +56,7 @@ public final class H2AdvisoryLock implements AdvisoryLock {
     public void close() throws SQLException {
         // Release lock by deleting the row
         try (PreparedStatement ps = conn.prepareStatement(
-            "DELETE FROM SCHEMA_INITIALIZATION_LOCK WHERE lock_key = ?")) {
+            String.format("DELETE FROM %s WHERE lock_key = ?", options.lockTableName()))) {
             ps.setLong(1, options.lockId());
             ps.executeUpdate();
         }

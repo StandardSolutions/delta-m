@@ -15,7 +15,7 @@ public final class PgDatabase implements Database {
     }
 
     @Override
-    public ChangeLog changelog() {
-        return new PgChangeLog();
+    public ChangeLog changelog(DamsOptions options) {
+        return new PgChangeLog(options);
     }
 }
