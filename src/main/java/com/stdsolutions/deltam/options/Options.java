@@ -51,7 +51,7 @@ public abstract class Options {
             final Matcher matcher = ptn.matcher(arg.trim());
             if (!matcher.matches()) {
                 throw new IllegalArgumentException(
-                        String.format("Invalid argument format: '%s'. Expected format: --name or --name=value", arg)
+                    String.format("Invalid argument format: '%s'. Expected format: --name or --name=value", arg)
                 );
             }
             final String value = matcher.group(2);

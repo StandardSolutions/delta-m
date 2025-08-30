@@ -17,20 +17,20 @@ public final class PgChangeLog implements ChangeLog {
     public void ensureExist(Connection c) throws SQLException {
         try (Statement stmt = c.createStatement()) {
             stmt.execute(String.format("""
-                    CREATE TABLE IF NOT EXISTS %s (
-                        id VARCHAR(255) PRIMARY KEY,
-                        description VARCHAR(255) NOT NULL,
-                        executed_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
-                    )
-                    """, options.changeLogTableName()));
+                CREATE TABLE IF NOT EXISTS %s (
+                    id VARCHAR(255) PRIMARY KEY,
+                    description VARCHAR(255) NOT NULL,
+                    executed_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+                )
+                """, options.changeLogTableName()));
         }
     }
 
     @Override
     public boolean has(Connection c, MigrationStep migration) throws SQLException {
         String query = String.format(
-                "SELECT COUNT(*) FROM %s WHERE id = ?",
-                options.changeLogTableName()
+            "SELECT COUNT(*) FROM %s WHERE id = ?",
+            options.changeLogTableName()
         );
         try (PreparedStatement stmt = c.prepareStatement(query)) {
             stmt.setString(1, migration.id());
@@ -43,8 +43,8 @@ public final class PgChangeLog implements ChangeLog {
     @Override
     public void append(Connection c, MigrationStep migration) throws SQLException {
         String query = String.format(
-                "INSERT INTO %s (id, description) VALUES (?, ?)",
-                options.changeLogTableName()
+            "INSERT INTO %s (id, description) VALUES (?, ?)",
+            options.changeLogTableName()
         );
         try (PreparedStatement stmt = c.prepareStatement(query)) {
             stmt.setString(1, migration.id());

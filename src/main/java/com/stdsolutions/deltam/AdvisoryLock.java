@@ -29,6 +29,7 @@ import java.sql.SQLException;
  * }</pre>
  */
 public interface AdvisoryLock extends AutoCloseable {
+
     /**
      * Attempts to acquire the lock, blocking until either the lock is acquired
      * or the timeout expires.
