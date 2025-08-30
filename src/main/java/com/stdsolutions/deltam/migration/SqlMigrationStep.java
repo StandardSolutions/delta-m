@@ -1,7 +1,6 @@
 package com.stdsolutions.deltam.migration;
 
 import com.stdsolutions.deltam.MigrationStep;
-import com.stdsolutions.deltam.options.DamsOptions;
 
 import java.sql.Connection;
 import java.sql.SQLException;

@@ -5,15 +5,15 @@ package com.stdsolutions.deltam.metadata;
  * or cannot be determined from JDBC URL.
  */
 public class UnsupportedDatabaseException extends RuntimeException {
-    
+
     public UnsupportedDatabaseException(String message) {
         super(message);
     }
-    
+
     public UnsupportedDatabaseException(String message, Throwable cause) {
         super(message, cause);
     }
-    
+
     public UnsupportedDatabaseException(Throwable cause) {
         super(cause);
     }

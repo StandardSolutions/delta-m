@@ -32,7 +32,7 @@ public final class SqlIdentifierSanitized implements Sanitized<String> {
         final int maxLength = 63;
         if (rawValue.length() > maxLength) {
             throw new IllegalArgumentException(
-                    String.format("Identifier exceeds %d characters", maxLength)
+                String.format("Identifier exceeds %d characters", maxLength)
             );
         }
 
@@ -40,7 +40,7 @@ public final class SqlIdentifierSanitized implements Sanitized<String> {
         final Pattern ptn = Pattern.compile("^[a-zA-Z_]\\w*$");
         if (!ptn.matcher(value).matches()) {
             throw new IllegalArgumentException(
-                    String.format("Invalid SQL identifier: '%s'. Only [a-zA-Z0-9_] allowed", rawValue)
+                String.format("Invalid SQL identifier: '%s'. Only [a-zA-Z0-9_] allowed", rawValue)
             );
         }
         return value;

@@ -6,7 +6,7 @@ import com.stdsolutions.deltam.options.DamsOptions;
 import java.sql.*;
 
 public final class H2AdvisoryLock implements AdvisoryLock {
-    
+
     private final Connection conn;
     private final DamsOptions options;
 
@@ -30,7 +30,7 @@ public final class H2AdvisoryLock implements AdvisoryLock {
         // Try to acquire lock by inserting a row
         long lockKey = options.lockId();
         long remaining = options.lockTimeoutMillis();
-        
+
         while (remaining > 0) {
             try (PreparedStatement ps = conn.prepareStatement(
                 String.format("INSERT INTO %s (lock_key) VALUES (?)", options.lockTableName()))) {

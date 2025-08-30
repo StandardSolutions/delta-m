@@ -21,13 +21,13 @@ public class DamsOptions extends Options {
 
     public long lockId() {
         return UUID
-                .nameUUIDFromBytes("delta-m".getBytes(java.nio.charset.StandardCharsets.UTF_8))
-                .getMostSignificantBits();
+            .nameUUIDFromBytes("delta-m".getBytes(java.nio.charset.StandardCharsets.UTF_8))
+            .getMostSignificantBits();
     }
 
     public String lockTableName() {
         return new SqlIdentifierSanitized(
-                map.getOrDefault("lock-table-name", "delta_m_lock")
+            map.getOrDefault("lock-table-name", "delta_m_lock")
         ).value();
     }
 
@@ -36,13 +36,13 @@ public class DamsOptions extends Options {
      */
     public int lockTimeoutMillis() {
         return Optional.ofNullable(map.get("lock-timeout-millis"))
-                .map(Integer::parseInt)
-                .orElse(60_000);
+            .map(Integer::parseInt)
+            .orElse(60_000);
     }
 
     public String changeLogTableName() {
         return new SqlIdentifierSanitized(
-                map.getOrDefault("changelog-table-name", "delta_m_changelog")
+            map.getOrDefault("changelog-table-name", "delta_m_changelog")
         ).value();
     }
 
@@ -53,7 +53,7 @@ public class DamsOptions extends Options {
 
     public String tableName(String tableName) {
         return new SqlIdentifierSanitized(
-                map.getOrDefault(tableName, tableName)
+            map.getOrDefault(tableName, tableName)
         ).value();
     }
 }

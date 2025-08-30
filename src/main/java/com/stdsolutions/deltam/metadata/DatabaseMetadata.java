@@ -33,7 +33,7 @@ public final class DatabaseMetadata {
             default:
                 throw new IllegalArgumentException(
                     String.format(
-                        "Unsupported database type: %s", 
+                        "Unsupported database type: %s",
                         this.type
                     )
                 );
