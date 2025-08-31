@@ -15,7 +15,7 @@ import java.sql.Statement;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class DamsPublisherCoreH2Test {
+class DeltaMH2Test {
 
     private DataSource dataSource;
     private DeltaM deltaM;

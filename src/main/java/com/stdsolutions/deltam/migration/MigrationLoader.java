@@ -2,7 +2,7 @@ package com.stdsolutions.deltam.migration;
 
 import com.stdsolutions.deltam.MigrationStep;
 import com.stdsolutions.deltam.metadata.DatabaseType;
-import com.stdsolutions.deltam.options.DamsOptions;
+import com.stdsolutions.deltam.options.MigrationOptions;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,10 +27,10 @@ public final class MigrationLoader {
 
     private static final Pattern MIGRATION_FILE_PATTERN = Pattern.compile("(\\d+)__(.+)\\.sql");
 
-    private final DamsOptions options;
+    private final MigrationOptions options;
     private final DatabaseType databaseType;
 
-    public MigrationLoader(final DamsOptions options, final DatabaseType databaseType) {
+    public MigrationLoader(final MigrationOptions options, final DatabaseType databaseType) {
         this.options = options;
         this.databaseType = databaseType;
     }
@@ -145,7 +145,7 @@ public final class MigrationLoader {
         }
     }
 
-    private String processTemplate(String content, DamsOptions options) {
+    private String processTemplate(String content, MigrationOptions options) {
         Pattern namePattern = Pattern.compile("\\$\\{([^}]+)\\}");
         Matcher matcher = namePattern.matcher(content);
         StringBuffer sb = new StringBuffer();

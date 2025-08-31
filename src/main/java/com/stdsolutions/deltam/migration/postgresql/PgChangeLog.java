@@ -2,14 +2,14 @@ package com.stdsolutions.deltam.migration.postgresql;
 
 import com.stdsolutions.deltam.ChangeLog;
 import com.stdsolutions.deltam.MigrationStep;
-import com.stdsolutions.deltam.options.DamsOptions;
+import com.stdsolutions.deltam.options.MigrationOptions;
 
 import java.sql.*;
 
 public final class PgChangeLog implements ChangeLog {
-    private final DamsOptions options;
+    private final MigrationOptions options;
 
-    public PgChangeLog(DamsOptions options) {
+    public PgChangeLog(MigrationOptions options) {
         this.options = options;
     }
 

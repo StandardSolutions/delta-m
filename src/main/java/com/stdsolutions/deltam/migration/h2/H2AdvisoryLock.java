@@ -1,16 +1,16 @@
 package com.stdsolutions.deltam.migration.h2;
 
 import com.stdsolutions.deltam.AdvisoryLock;
-import com.stdsolutions.deltam.options.DamsOptions;
+import com.stdsolutions.deltam.options.MigrationOptions;
 
 import java.sql.*;
 
 public final class H2AdvisoryLock implements AdvisoryLock {
 
     private final Connection conn;
-    private final DamsOptions options;
+    private final MigrationOptions options;
 
-    public H2AdvisoryLock(Connection conn, DamsOptions options) {
+    public H2AdvisoryLock(Connection conn, MigrationOptions options) {
         this.conn = conn;
         this.options = options;
     }

@@ -2,14 +2,14 @@ package com.stdsolutions.deltam.migration.h2;
 
 import com.stdsolutions.deltam.ChangeLog;
 import com.stdsolutions.deltam.MigrationStep;
-import com.stdsolutions.deltam.options.DamsOptions;
+import com.stdsolutions.deltam.options.MigrationOptions;
 
 import java.sql.*;
 
 public final class H2ChangeLog implements ChangeLog {
-    private final DamsOptions options;
+    private final MigrationOptions options;
 
-    public H2ChangeLog(DamsOptions options) {
+    public H2ChangeLog(MigrationOptions options) {
         this.options = options;
     }
 

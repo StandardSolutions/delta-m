@@ -20,7 +20,7 @@ import java.sql.Statement;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
-class DamsPublisherCorePostgreSQLTest {
+class DeltaMPostgreSQLTest {
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
@@ -39,18 +39,18 @@ class DamsPublisherCorePostgreSQLTest {
         pgDataSource.setUser(postgres.getUsername());
         pgDataSource.setPassword(postgres.getPassword());
         
-        // Создаем схему dams, если она не существует
+        // Создаем схему delta_m, если она не существует
         try (Connection connection = pgDataSource.getConnection();
              Statement statement = connection.createStatement()) {
-            statement.execute("CREATE SCHEMA IF NOT EXISTS dams");
+            statement.execute("CREATE SCHEMA IF NOT EXISTS delta_m");
         }
         
-        pgDataSource.setCurrentSchema("dams");
+        pgDataSource.setCurrentSchema("delta_m");
         dataSource = pgDataSource;
         // Настраиваем имена таблиц для PostgreSQL
         deltaM = new DeltaM(dataSource, 
-                "--recipient_table=dams_recipient", 
-                "--outbox_table=dams_outbox");
+                "--recipient_table=delta_m_recipient",
+                "--outbox_table=delta_m_outbox");
     }
 
     @AfterEach
@@ -58,7 +58,7 @@ class DamsPublisherCorePostgreSQLTest {
         // Очищаем созданные таблицы после каждого теста
 //        try (Connection connection = dataSource.getConnection();
 //             Statement statement = connection.createStatement()) {
-//            statement.execute("DROP TABLE IF EXISTS dams_changelog_table CASCADE");
+//            statement.execute("DROP TABLE IF EXISTS delta_m_changelog_table CASCADE");
 //            statement.execute("DROP TABLE IF EXISTS schema_initialization_lock CASCADE");
 //            statement.execute("DROP TABLE IF EXISTS outbox_message CASCADE");
 //            statement.execute("DROP TABLE IF EXISTS schema_version CASCADE");
@@ -83,7 +83,7 @@ class DamsPublisherCorePostgreSQLTest {
              Statement statement = connection.createStatement()) {
             ResultSet resultSet = statement.executeQuery(
                 "SELECT table_name FROM information_schema.tables " +
-                "WHERE table_name = 'dams_recipient' AND table_schema = 'dams'"
+                "WHERE table_name = 'delta_m_recipient' AND table_schema = 'delta_m'"
             );
             assertTrue(resultSet.next(), "Table 'recipient' should be created");
         }
@@ -92,12 +92,12 @@ class DamsPublisherCorePostgreSQLTest {
 //        try (Connection connection = dataSource.getConnection();
 //             Statement statement = connection.createStatement()) {
 //
-//            // Проверяем таблицу dams_changelog_table
+//            // Проверяем таблицу delta_m_changelog_table
 //            ResultSet resultSet = statement.executeQuery(
 //                "SELECT table_name FROM information_schema.tables " +
-//                "WHERE table_name = 'dams_changelog_table' AND table_schema = 'public'"
+//                "WHERE table_name = 'delta_m_changelog_table' AND table_schema = 'public'"
 //            );
-//            assertTrue(resultSet.next(), "Table 'dams_changelog_table' should be created");
+//            assertTrue(resultSet.next(), "Table 'delta_m_changelog_table' should be created");
 //
 //            // Проверяем таблицу schema_initialization_lock
 //            resultSet = statement.executeQuery(
@@ -137,7 +137,7 @@ class DamsPublisherCorePostgreSQLTest {
             
             ResultSet resultSet = statement.executeQuery(
                 "SELECT COUNT(*) FROM information_schema.tables " +
-                "WHERE table_name IN ('dams_changelog_table', 'schema_initialization_lock', 'outbox_message', 'schema_version') " +
+                "WHERE table_name IN ('delta_m_changelog_table', 'schema_initialization_lock', 'outbox_message', 'schema_version') " +
                 "AND table_schema = 'public'"
             );
             assertTrue(resultSet.next());
@@ -184,10 +184,10 @@ class DamsPublisherCorePostgreSQLTest {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
             
-            // Проверяем структуру таблицы dams_changelog_table
+            // Проверяем структуру таблицы delta_m_changelog_table
             ResultSet resultSet = statement.executeQuery(
                 "SELECT column_name, data_type FROM information_schema.columns " +
-                "WHERE table_name = 'dams_changelog_table' AND table_schema = 'public' " +
+                "WHERE table_name = 'delta_m_changelog_table' AND table_schema = 'public' " +
                 "ORDER BY ordinal_position"
             );
             
@@ -221,13 +221,13 @@ class DamsPublisherCorePostgreSQLTest {
             // Проверяем, что таблицы созданы в правильной схеме (public)
             ResultSet resultSet = statement.executeQuery(
                 "SELECT schemaname, tablename FROM pg_tables " +
-                "WHERE tablename IN ('dams_changelog_table', 'schema_initialization_lock') " +
+                "WHERE tablename IN ('delta_m_changelog_table', 'schema_initialization_lock') " +
                 "ORDER BY tablename"
             );
             
             assertTrue(resultSet.next());
             assertEquals("public", resultSet.getString("schemaname"));
-            assertEquals("dams_changelog_table", resultSet.getString("tablename"));
+            assertEquals("delta_m_changelog_table", resultSet.getString("tablename"));
             
             assertTrue(resultSet.next());
             assertEquals("public", resultSet.getString("schemaname"));

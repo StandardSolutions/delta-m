@@ -1,16 +1,16 @@
 package com.stdsolutions.deltam.migration.postgresql;
 
 import com.stdsolutions.deltam.AdvisoryLock;
-import com.stdsolutions.deltam.options.DamsOptions;
+import com.stdsolutions.deltam.options.MigrationOptions;
 
 import java.sql.*;
 
 public final class PgAdvisoryLock implements AdvisoryLock {
 
     private final Connection conn;
-    private final DamsOptions options;
+    private final MigrationOptions options;
 
-    public PgAdvisoryLock(Connection conn, DamsOptions options) {
+    public PgAdvisoryLock(Connection conn, MigrationOptions options) {
         this.conn = conn;
         this.options = options;
     }

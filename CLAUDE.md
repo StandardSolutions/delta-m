@@ -47,15 +47,15 @@ mvn clean
 - Migration files follow pattern: `{number}__{description}.sql` (e.g., `001__create_changelog_table.sql`)
 - Located in `src/main/resources/migrations/{database_type}/` where `{database_type}` is `postgresql`, `h2`, etc.
 - Automatic discovery: Files are discovered automatically from JAR or filesystem using universal resource scanning
-- Template variables: All `${variable}` patterns are resolved via `DamsOptions.tableName()` method
+- Template variables: All `${variable}` patterns are resolved via `delta_mOptions.tableName()` method
 - Multi-statement support: SQL files can contain multiple statements separated by semicolons
 
 ### Options System
 
-Configuration via `DamsOptions` class supporting:
+Configuration via `delta_mOptions` class supporting:
 - `db-schema`: Database schema (default: "public")
-- `db-changelog-table-name`: Changelog table name (default: "dams_3db_changelog")
-- `db-lock-table-name`: Lock table name (default: "dams_db_lock")
+- `db-changelog-table-name`: Changelog table name (default: "delta_m_3db_changelog")
+- `db-lock-table-name`: Lock table name (default: "delta_m_db_lock")
 - `migration-path`: Path to migration files (default: "migrations")
 - `lock-timeout-millis`: Lock timeout (default: 60000ms)
 
