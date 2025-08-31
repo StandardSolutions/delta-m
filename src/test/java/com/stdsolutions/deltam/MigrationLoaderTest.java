@@ -2,7 +2,7 @@ package com.stdsolutions.deltam;
 
 import com.stdsolutions.deltam.metadata.DatabaseType;
 import com.stdsolutions.deltam.migration.MigrationLoader;
-import com.stdsolutions.deltam.options.DamsOptions;
+import com.stdsolutions.deltam.options.MigrationOptions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -14,7 +14,7 @@ class MigrationLoaderTest {
 
     @Test
     void testStepsFromResources() throws IOException {
-        DamsOptions options = new DamsOptions();
+        MigrationOptions options = new MigrationOptions();
         MigrationLoader loader = new MigrationLoader(options, DatabaseType.H2);
 
         List<MigrationStep> migrations = loader.steps();
@@ -34,7 +34,7 @@ class MigrationLoaderTest {
 
     @Test
     void testMigrationStepProperties() throws IOException {
-        DamsOptions options = new DamsOptions();
+        MigrationOptions options = new MigrationOptions();
         MigrationLoader loader = new MigrationLoader(options, DatabaseType.H2);
 
         List<MigrationStep> migrations = loader.steps();
@@ -50,7 +50,7 @@ class MigrationLoaderTest {
     @Test
     void testCustomMigrationsPath() throws IOException {
         // Test custom migration path option
-        DamsOptions options = new DamsOptions("--migration-path=custom/migrations");
+        MigrationOptions options = new MigrationOptions("--migration-path=custom/migrations");
         MigrationLoader loader = new MigrationLoader(options, DatabaseType.H2);
 
         List<MigrationStep> migrations = loader.steps();
@@ -58,7 +58,7 @@ class MigrationLoaderTest {
         assertNotNull(migrations, "Migrations list should not be null");
         assertEquals(0, migrations.size(), "Should return empty list for non-existent path");
 
-        DamsOptions defaultOptions = new DamsOptions();
+        MigrationOptions defaultOptions = new MigrationOptions();
         MigrationLoader defaultLoader = new MigrationLoader(defaultOptions, DatabaseType.H2);
 
         List<MigrationStep> defaultMigrations = defaultLoader.steps();
@@ -67,7 +67,7 @@ class MigrationLoaderTest {
 
     @Test
     void testTemplateProcessing() throws IOException {
-        DamsOptions options = new DamsOptions();
+        MigrationOptions options = new MigrationOptions();
         MigrationLoader loader = new MigrationLoader(options, DatabaseType.H2);
 
         List<MigrationStep> migrations = loader.steps();

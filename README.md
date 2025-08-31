@@ -13,13 +13,13 @@ Zero deps: core uses only java.sql (tests aside).
 
 ## Install
 <dependency>
-  <groupId>io.dams</groupId>
+  <groupId>com.std-solutions</groupId>
   <artifactId>delta-m-core</artifactId>
   <version>0.1.0</version>
 </dependency>
 <!-- Optional dialect helpers -->
 <dependency>
-  <groupId>io.dams</groupId>
+  <groupId>com.std-solutions</groupId>
   <artifactId>delta-m-pg</artifactId>
   <version>0.1.0</version>
 </dependency>

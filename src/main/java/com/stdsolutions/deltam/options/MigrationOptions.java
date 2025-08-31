@@ -5,13 +5,13 @@ import com.stdsolutions.deltam.sanitized.SqlIdentifierSanitized;
 import java.util.Optional;
 import java.util.UUID;
 
-public class DamsOptions extends Options {
+public class MigrationOptions extends Options {
 
-    public DamsOptions(String... args) {
+    public MigrationOptions(String... args) {
         super(args);
     }
 
-    public DamsOptions(Iterable<String> args) {
+    public MigrationOptions(Iterable<String> args) {
         super(args);
     }
 

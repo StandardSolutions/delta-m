@@ -2,7 +2,7 @@ package com.stdsolutions.deltam;
 
 import com.stdsolutions.deltam.metadata.DatabaseMetadata;
 import com.stdsolutions.deltam.migration.MigrationLoader;
-import com.stdsolutions.deltam.options.DamsOptions;
+import com.stdsolutions.deltam.options.MigrationOptions;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -21,7 +21,7 @@ public final class DeltaM {
     }
 
     public void init() throws SQLException, IOException {
-        DamsOptions options = new DamsOptions(this.args);
+        MigrationOptions options = new MigrationOptions(this.args);
         try (Connection c = dataSource.getConnection()) {
             DatabaseMetadata metadata = new DatabaseMetadata(c);
             Database db = metadata.database();
