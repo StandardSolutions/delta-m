@@ -1,4 +1,4 @@
-package com.stdsolutions.deltam.fs.filelist;
+package com.stdsolutions.deltam.files.filelist;
 
 import java.util.List;
 

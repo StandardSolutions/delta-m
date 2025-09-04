@@ -1,8 +1,8 @@
-package com.stdsolutions.deltam.fs.filelist;
+package com.stdsolutions.deltam.files.filelist;
 
 import java.util.List;
 
-public class JarResourceFileList implements FileList {
+public class FileSystemFileList implements FileList {
 
     @Override
     public List<String> values(String dir) {
