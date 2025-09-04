@@ -7,3 +7,5 @@ CREATE TABLE IF NOT EXISTS ${outbox_table} (
     
     FOREIGN KEY (recipient_id) REFERENCES ${recipient_table}(id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_${outbox_table}_created_at ON ${outbox_table}(created_at);
