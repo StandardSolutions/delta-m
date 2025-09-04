@@ -88,6 +88,27 @@ class DeltaMPostgreSQLTest {
             assertTrue(resultSet.next(), "Table 'recipient' should be created");
         }
 
+        // Проверяем, что таблица outbox была создана
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(
+                "SELECT table_name FROM information_schema.tables " +
+                "WHERE table_name = 'delta_m_outbox' AND table_schema = 'delta_m'"
+            );
+            assertTrue(resultSet.next(), "Table 'outbox' should be created");
+        }
+
+        // Проверяем, что индекс на created_at был создан
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(
+                "SELECT indexname FROM pg_indexes " +
+                "WHERE tablename = 'delta_m_outbox' AND schemaname = 'delta_m' " +
+                "AND indexname = 'idx_delta_m_outbox_created_at'"
+            );
+            assertTrue(resultSet.next(), "Index 'idx_delta_m_outbox_created_at' should be created");
+        }
+
 //        // Проверяем, что все необходимые таблицы были созданы
 //        try (Connection connection = dataSource.getConnection();
 //             Statement statement = connection.createStatement()) {
