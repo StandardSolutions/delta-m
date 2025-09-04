@@ -74,13 +74,21 @@ All migrations must be idempotent:
 
 ### Key Design Principles
 
-1. **Elegant Objects**: Follow Elegant Objects principles for object-oriented design
-2. **Idempotency**: All migration steps use `IF NOT EXISTS` patterns and upsert operations
-3. **Advisory Locking**: Single connection with advisory lock prevents parallel execution
-4. **Transactional Safety**: Each migration step is atomic
-5. **Database-Agnostic**: Interface-based design supports multiple database types
-6. **Universal Template System**: Single `${variable}` pattern handles all template substitutions
-7. **Automatic Discovery**: Migration files are discovered automatically without hardcoded lists
+1. **Clean Code**: Follow clean code principles with meaningful names, small functions, and clear abstractions
+2. **Clean Architecture**: Maintain separation of concerns with clear boundaries between layers and dependencies pointing inward
+3. **SOLID Principles**: Apply Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, and Dependency Inversion principles
+4. **DRY (Don't Repeat Yourself)**: Eliminate code duplication through proper abstraction and reusable components
+5. **KISS (Keep It Simple, Stupid)**: Prefer simple, straightforward solutions over complex ones
+6. **Fail Fast**: Validate inputs early and throw meaningful exceptions for invalid states
+7. **Low Coupling and High Cohesion**: Minimize dependencies between components while maximizing internal component unity
+8. **Immutability**: Prefer immutable objects to reduce side effects and improve thread safety
+9. **Elegant Objects**: Follow Elegant Objects principles for object-oriented design
+10. **Idempotency**: All migration steps use `IF NOT EXISTS` patterns and upsert operations
+11. **Advisory Locking**: Single connection with advisory lock prevents parallel execution
+12. **Transactional Safety**: Each migration step is atomic
+13. **Database-Agnostic**: Interface-based design supports multiple database types
+14. **Universal Template System**: Single `${variable}` pattern handles all template substitutions
+15. **Automatic Discovery**: Migration files are discovered automatically without hardcoded lists
 
 ## Recent Improvements
 
