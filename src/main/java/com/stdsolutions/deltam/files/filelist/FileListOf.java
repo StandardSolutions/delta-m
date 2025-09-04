@@ -1,8 +1,10 @@
 package com.stdsolutions.deltam.files.filelist;
 
+import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 
 public final class FileListOf {
     private final String path;
@@ -18,17 +20,50 @@ public final class FileListOf {
         
         if (path.startsWith("classpath:")) {
             String resourcePath = path.substring("classpath:".length());
-            final ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            URL resource = cl.getResource(resourcePath);
-            if (resource == null) {
-                throw new IllegalStateException("Resource not found: " + resourcePath);
+            List<URL> migrationResources = findMigrationResources(resourcePath);
+            if (migrationResources.isEmpty()) {
+                throw new IllegalStateException("No migration resources found: " + resourcePath);
             }
-            return switch (resource.getProtocol()) {
+            
+            URL primaryResource = migrationResources.get(0);
+            return switch (primaryResource.getProtocol()) {
                 case "file" -> new ExplodedResourceFileList();
                 case "jar" -> new JarResourceFileList();
-                default -> throw new IllegalStateException("Unsupported protocol: " + resource.getProtocol());
+                default -> throw new IllegalStateException("Unsupported protocol: " + primaryResource.getProtocol());
             };
         }
         throw new IllegalStateException("Path must contain a valid prefix (filesystem: or classpath:): " + path);
+    }
+
+    private List<URL> findMigrationResources(String resourcePath) {
+        final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        List<URL> migrationUrls = new ArrayList<>();
+        
+        try {
+            Enumeration<URL> resources = cl.getResources(resourcePath);
+            while (resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                if (hasDeltaMMarker(url)) {
+                    migrationUrls.add(url);
+                }
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to find migration resources for: " + resourcePath, e);
+        }
+        
+        return migrationUrls;
+    }
+    
+    private boolean hasDeltaMMarker(URL migrationUrl) {
+        try {
+            String urlString = migrationUrl.toString();
+            // Попытаться найти маркерный файл в корне ресурсов
+            String markerPath = urlString.replaceAll("/migrations/.*", "/META-INF/delta-m.marker");
+            URL markerUrl = new URL(markerPath);
+            markerUrl.openStream().close(); // Просто проверить, что файл существует
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
