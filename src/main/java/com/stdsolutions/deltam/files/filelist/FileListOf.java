@@ -13,7 +13,7 @@ public final class FileListOf {
         this.path = path;
     }
 
-    public final FileList value() {
+    public FileList value() {
         if (path.startsWith("filesystem:")) {
             return new FileSystemFileList();
         }
