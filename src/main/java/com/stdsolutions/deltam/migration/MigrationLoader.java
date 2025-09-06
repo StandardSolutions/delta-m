@@ -161,7 +161,7 @@ public final class MigrationLoader {
     }
 
     private String buildMigrationPath() {
-        String basePath = options.migrationPath();
+        String basePath = options.migrationPath().toString();
         String dbTypePath = databaseType.name().toLowerCase();
         return basePath + "/" + dbTypePath;
     }

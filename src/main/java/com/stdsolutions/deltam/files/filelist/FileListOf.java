@@ -1,5 +1,7 @@
 package com.stdsolutions.deltam.files.filelist;
 
+import com.stdsolutions.deltam.files.path.MigrationPath;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -7,19 +9,19 @@ import java.util.Enumeration;
 import java.util.List;
 
 public final class FileListOf {
-    private final String path;
+    private final MigrationPath path;
 
-    public FileListOf(String path) {
+    public FileListOf(MigrationPath path) {
         this.path = path;
     }
 
     public FileList value() {
-        if (path.startsWith("filesystem:")) {
+        if (path.isFileSystem()) {
             return new FileSystemFileList();
         }
         
-        if (path.startsWith("classpath:")) {
-            String resourcePath = path.substring("classpath:".length());
+        if (path.isClasspath()) {
+            String resourcePath = path.toString();
             List<URL> migrationResources = findMigrationResources(resourcePath);
             if (migrationResources.isEmpty()) {
                 throw new IllegalStateException("No migration resources found: " + resourcePath);

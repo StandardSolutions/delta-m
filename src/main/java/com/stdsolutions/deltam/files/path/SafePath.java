@@ -5,55 +5,69 @@ import java.nio.file.Paths;
 
 /**
  * A secure path implementation that validates and sanitizes file paths to prevent security vulnerabilities.
- * 
+ *
  * <p>This class provides protection against:
  * <ul>
  *   <li>Path traversal attacks (e.g., "../../../etc/passwd")</li>
  *   <li>Absolute path access (e.g., "/etc/passwd")</li>
  *   <li>Empty or blank paths</li>
  * </ul>
- * 
+ *
  * <p>All paths are normalized and converted to use forward slashes for consistency.
  * Only relative paths within the current directory tree are allowed.
- *
  */
-public class SafePath implements StrPath {
+public class SafePath implements MigrationPath {
 
-    private final String value;
+    private final MigrationPath value;
 
     /**
      * Creates a new SafePath from the given string path.
-     * 
-     * @param strPath the path string to validate and sanitize
+     *
+     * @param migrationPath the path string to validate and sanitize
      * @throws IllegalArgumentException if the path is null, blank, contains traversal patterns, or is absolute
      */
-    public SafePath(final String strPath) {
-        checkEmptyPath(strPath);
-        checkTraversalPattern(strPath);
-        Path path = Paths.get(strPath).normalize();
+    public SafePath(final MigrationPath migrationPath) {
+        checkEmptyPath(migrationPath.toString());
+        checkTraversalPattern(migrationPath.toString());
+        Path path = Paths.get(migrationPath.toString()).normalize();
         checkAbsolutePath(path);
-        this.value = path.toString()
+        this.value = migrationPath;
+    }
+
+    /**
+     * Returns the validated path.
+     *
+     * @return the safe path.
+     */
+    @Override
+    public Path value() {
+        return this.value.value();
+    }
+
+    @Override
+    public String toString() {
+        return this.value.toString()
                 .trim()
                 .replace("\\", "/")
                 .replaceAll("/+", "/");
     }
 
-    /**
-     * Returns the validated and sanitized path string.
-     * 
-     * @return the safe path string with normalized separators
-     */
     @Override
-    public String value() {
-        return this.value;
+    public boolean isClasspath() {
+        return this.value.isClasspath();
     }
 
-    private static void checkEmptyPath(String strPath) {
-        if (strPath == null) {
+    @Override
+    public boolean isFileSystem() {
+        return this.value.isFileSystem();
+    }
+
+    private static void checkEmptyPath(String path) {
+        if (path == null) {
             throw new IllegalArgumentException("Path cannot be null");
         }
 
-        if (strPath.isBlank()) {
+        if (path.isBlank()) {
             throw new IllegalArgumentException("Path cannot be blank");
         }
     }
