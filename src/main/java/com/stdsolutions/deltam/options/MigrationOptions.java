@@ -1,5 +1,8 @@
 package com.stdsolutions.deltam.options;
 
+import com.stdsolutions.deltam.files.path.SafePath;
+import com.stdsolutions.deltam.files.path.MigrationPath;
+import com.stdsolutions.deltam.files.path.UnPrefixedPath;
 import com.stdsolutions.deltam.sanitized.SqlIdentifierSanitized;
 
 import java.util.Optional;
@@ -47,8 +50,11 @@ public class MigrationOptions extends Options {
     }
 
 
-    public String migrationPath() {
-        return map.getOrDefault("migration-path", "db/delta-m");
+    public MigrationPath migrationPath() {
+        String migrationPath = map.getOrDefault("migration-path", "db/delta-m");
+        return new SafePath(
+                new UnPrefixedPath(migrationPath)
+        );
     }
 
     public String tableName(String tableName) {
