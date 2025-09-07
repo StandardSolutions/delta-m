@@ -1,4 +1,4 @@
-package com.stdsolutions.deltam.core.data.shared;
+package com.stdsolutions.deltam.options;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
