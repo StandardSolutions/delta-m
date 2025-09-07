@@ -13,6 +13,8 @@ import com.stdsolutions.deltam.options.MigrationOptions;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +39,7 @@ public final class MigrationLoader {
         String migrationsPath = buildMigrationPath();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-        MigrationPath dbSpecificPath = new SafePath(new UnPrefixedPath(migrationsPath));
+        MigrationPath dbSpecificPath = createDbSpecificPath(migrationsPath);
         FileList fileList = new SqlFilteredFileList(new FileListOf(dbSpecificPath).value());
         List<String> migrationFiles = fileList.values();
 
@@ -46,7 +48,7 @@ public final class MigrationLoader {
             if (matcher.matches()) {
                 String migrationNumber = matcher.group(1);
                 String migrationName = matcher.group(2);
-                String content = loadMigrationContent(classLoader, migrationsPath, fileName);
+                String content = loadMigrationContent(migrationsPath, fileName);
                 String processedContent = processTemplate(content, options);
 
                 migrations.add(new SqlMigrationStep(
@@ -61,13 +63,26 @@ public final class MigrationLoader {
     }
 
 
-    private String loadMigrationContent(ClassLoader classLoader, String migrationsPath, String fileName) throws IOException {
-        String resourcePath = Paths.get(migrationsPath, fileName).toString().replace('\\', '/');
-        try (InputStream inputStream = classLoader.getResourceAsStream(resourcePath)) {
-            if (inputStream == null) {
-                throw new IOException("Migration file not found: " + resourcePath);
+    private String loadMigrationContent(String migrationsPath, String fileName) throws IOException {
+        MigrationPath originalPath = options.migrationPath();
+        
+        if (originalPath.isFileSystem()) {
+            // Load from real filesystem
+            Path filePath = Paths.get(migrationsPath, fileName);
+            if (!Files.exists(filePath)) {
+                throw new IOException("Migration file not found: " + filePath.toAbsolutePath());
             }
-            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            return Files.readString(filePath, StandardCharsets.UTF_8);
+        } else {
+            // Load from classpath resources
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            String resourcePath = Paths.get(migrationsPath, fileName).toString().replace('\\', '/');
+            try (InputStream inputStream = classLoader.getResourceAsStream(resourcePath)) {
+                if (inputStream == null) {
+                    throw new IOException("Migration file not found: " + resourcePath);
+                }
+                return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            }
         }
     }
 
@@ -90,6 +105,22 @@ public final class MigrationLoader {
         String basePath = options.migrationPath().toString();
         String dbTypePath = databaseType.name().toLowerCase();
         return basePath + "/" + dbTypePath;
+    }
+    
+    private MigrationPath createDbSpecificPath(String migrationsPath) {
+        // Preserve the original prefix from the migration options
+        MigrationPath originalPath = options.migrationPath();
+        
+        if (originalPath.isFileSystem()) {
+            // For filesystem paths, create a new path with filesystem: prefix
+            return new SafePath(new UnPrefixedPath("filesystem:" + migrationsPath));
+        } else if (originalPath.isClasspath()) {
+            // For classpath paths, create a new path with classpath: prefix  
+            return new SafePath(new UnPrefixedPath("classpath:" + migrationsPath));
+        } else {
+            // For unprefixed paths, create without prefix (backward compatibility)
+            return new SafePath(new UnPrefixedPath(migrationsPath));
+        }
     }
 
 }
