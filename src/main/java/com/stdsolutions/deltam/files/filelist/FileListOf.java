@@ -17,20 +17,22 @@ public final class FileListOf {
 
     public FileList value() {
         if (path.isFileSystem()) {
-            return new FileSystemFileList();
+            return new FileSystemFileList(path);
         }
         
-        if (path.isClasspath()) {
+        // Treat both classpath: prefixed paths and unprefixed paths as classpath resources for backward compatibility
+        if (path.isClasspath() || (!path.isFileSystem() && !path.isClasspath())) {
             String resourcePath = path.toString();
             List<URL> migrationResources = findMigrationResources(resourcePath);
             if (migrationResources.isEmpty()) {
-                throw new IllegalStateException("No migration resources found: " + resourcePath);
+                // Return empty file list instead of throwing exception for backward compatibility
+                return () -> List.of();
             }
             
             URL primaryResource = migrationResources.get(0);
             return switch (primaryResource.getProtocol()) {
-                case "file" -> new ExplodedResourceFileList();
-                case "jar" -> new JarResourceFileList();
+                case "file" -> new ExplodedResourceFileList(path);
+                case "jar" -> new JarResourceFileList(path);
                 default -> throw new IllegalStateException("Unsupported protocol: " + primaryResource.getProtocol());
             };
         }
