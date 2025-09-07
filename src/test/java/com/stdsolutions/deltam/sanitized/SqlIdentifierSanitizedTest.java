@@ -1,4 +1,4 @@
-package com.stdsolutions.deltam.core.sanitized;
+package com.stdsolutions.deltam.sanitized;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

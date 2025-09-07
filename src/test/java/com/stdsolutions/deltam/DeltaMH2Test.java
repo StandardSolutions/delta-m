@@ -1,4 +1,4 @@
-package com.stdsolutions.deltam.core;
+package com.stdsolutions.deltam;
 
 import com.stdsolutions.deltam.DeltaM;
 import org.junit.jupiter.api.AfterEach;
