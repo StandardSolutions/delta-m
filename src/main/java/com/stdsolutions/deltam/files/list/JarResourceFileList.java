@@ -1,6 +1,7 @@
-package com.stdsolutions.deltam.files.filelist;
+package com.stdsolutions.deltam.files.list;
 
-import com.stdsolutions.deltam.files.path.MigrationPath;
+import com.stdsolutions.deltam.files.FileList;
+import com.stdsolutions.deltam.files.MigrationPath;
 
 import java.io.IOException;
 import java.net.JarURLConnection;
@@ -49,7 +50,6 @@ public class JarResourceFileList implements FileList {
                 String entryName = entry.getName();
 
                 if (entryName.startsWith(pathWithSlash) &&
-                    entryName.endsWith(".sql") &&
                     !entry.isDirectory()) {
 
                     String fileName = entryName.substring(pathWithSlash.length());

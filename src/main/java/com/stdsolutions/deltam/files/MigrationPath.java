@@ -1,4 +1,4 @@
-package com.stdsolutions.deltam.files.path;
+package com.stdsolutions.deltam.files;
 
 import java.nio.file.Path;
 

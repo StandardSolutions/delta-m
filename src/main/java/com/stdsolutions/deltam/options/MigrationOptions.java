@@ -1,7 +1,7 @@
 package com.stdsolutions.deltam.options;
 
 import com.stdsolutions.deltam.files.path.SafePath;
-import com.stdsolutions.deltam.files.path.MigrationPath;
+import com.stdsolutions.deltam.files.MigrationPath;
 import com.stdsolutions.deltam.files.path.UnPrefixedPath;
 import com.stdsolutions.deltam.sanitized.SqlIdentifierSanitized;
 

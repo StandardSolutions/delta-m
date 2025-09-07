@@ -1,6 +1,7 @@
-package com.stdsolutions.deltam.files.filelist;
+package com.stdsolutions.deltam.files.list;
 
-import com.stdsolutions.deltam.files.path.MigrationPath;
+import com.stdsolutions.deltam.files.FileList;
+import com.stdsolutions.deltam.files.MigrationPath;
 
 import java.io.IOException;
 import java.net.URI;
@@ -13,11 +14,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class ExplodedResourceFileList implements FileList {
+/**
+ * FileList implementation for filesystem-based resources.
+ * Handles both regular filesystem paths and exploded JAR resources (file:// protocol).
+ */
+public class FileSystemBasedFileList implements FileList {
 
     private final MigrationPath migrationPath;
 
-    public ExplodedResourceFileList(MigrationPath migrationPath) {
+    public FileSystemBasedFileList(MigrationPath migrationPath) {
         this.migrationPath = migrationPath;
     }
 
@@ -35,7 +40,7 @@ public class ExplodedResourceFileList implements FileList {
             URI uri = migrationsUrl.toURI();
             return findMigrationFilesInFileSystem(uri);
         } catch (URISyntaxException | IOException e) {
-            throw new RuntimeException("Failed to discover migration files from exploded resources", e);
+            throw new RuntimeException("Failed to discover migration files from filesystem-based resources", e);
         }
     }
 
@@ -47,7 +52,6 @@ public class ExplodedResourceFileList implements FileList {
             try (Stream<Path> paths = Files.list(migrationDir)) {
                 files = paths
                     .filter(Files::isRegularFile)
-                    .filter(path -> path.toString().endsWith(".sql"))
                     .map(path -> path.getFileName().toString())
                     .sorted()
                     .toList();

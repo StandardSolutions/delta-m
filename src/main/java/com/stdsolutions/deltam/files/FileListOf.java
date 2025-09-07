@@ -1,6 +1,7 @@
-package com.stdsolutions.deltam.files.filelist;
+package com.stdsolutions.deltam.files;
 
-import com.stdsolutions.deltam.files.path.MigrationPath;
+import com.stdsolutions.deltam.files.list.FileSystemBasedFileList;
+import com.stdsolutions.deltam.files.list.JarResourceFileList;
 
 import java.io.IOException;
 import java.net.URL;
@@ -17,7 +18,7 @@ public final class FileListOf {
 
     public FileList value() {
         if (path.isFileSystem()) {
-            return new FileSystemFileList(path);
+            return new FileSystemBasedFileList(path);
         }
         
         // Treat both classpath: prefixed paths and unprefixed paths as classpath resources for backward compatibility
@@ -31,7 +32,7 @@ public final class FileListOf {
             
             URL primaryResource = migrationResources.get(0);
             return switch (primaryResource.getProtocol()) {
-                case "file" -> new ExplodedResourceFileList(path);
+                case "file" -> new FileSystemBasedFileList(path);
                 case "jar" -> new JarResourceFileList(path);
                 default -> throw new IllegalStateException("Unsupported protocol: " + primaryResource.getProtocol());
             };

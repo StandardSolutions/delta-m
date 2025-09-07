@@ -1,9 +1,10 @@
 package com.stdsolutions.deltam.migration;
 
 import com.stdsolutions.deltam.MigrationStep;
-import com.stdsolutions.deltam.files.filelist.FileList;
-import com.stdsolutions.deltam.files.filelist.FileListOf;
-import com.stdsolutions.deltam.files.path.MigrationPath;
+import com.stdsolutions.deltam.files.FileList;
+import com.stdsolutions.deltam.files.FileListOf;
+import com.stdsolutions.deltam.files.MigrationPath;
+import com.stdsolutions.deltam.files.filter.SqlFilteredFileList;
 import com.stdsolutions.deltam.files.path.SafePath;
 import com.stdsolutions.deltam.files.path.UnPrefixedPath;
 import com.stdsolutions.deltam.metadata.DatabaseType;
@@ -37,7 +38,7 @@ public final class MigrationLoader {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
         MigrationPath dbSpecificPath = new SafePath(new UnPrefixedPath(migrationsPath));
-        FileList fileList = new FileListOf(dbSpecificPath).value();
+        FileList fileList = new SqlFilteredFileList(new FileListOf(dbSpecificPath).value());
         List<String> migrationFiles = fileList.values();
 
         for (String fileName : migrationFiles) {

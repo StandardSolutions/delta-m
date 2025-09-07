@@ -1,5 +1,7 @@
 package com.stdsolutions.deltam.files.path;
 
+import com.stdsolutions.deltam.files.MigrationPath;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
