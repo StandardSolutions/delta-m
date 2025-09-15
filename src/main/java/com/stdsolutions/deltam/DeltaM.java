@@ -6,6 +6,7 @@ import com.stdsolutions.deltam.options.MigrationOptions;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -20,7 +21,7 @@ public final class DeltaM {
         this.args = args;
     }
 
-    public void init() throws SQLException, IOException {
+    public void init() throws SQLException, IOException, URISyntaxException {
         MigrationOptions options = new MigrationOptions(this.args);
         try (Connection c = dataSource.getConnection()) {
             DatabaseMetadata metadata = new DatabaseMetadata(c);

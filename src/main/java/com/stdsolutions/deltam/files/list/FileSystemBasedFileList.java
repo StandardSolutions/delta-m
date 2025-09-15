@@ -3,6 +3,7 @@ package com.stdsolutions.deltam.files.list;
 import com.stdsolutions.deltam.files.FileList;
 import com.stdsolutions.deltam.files.MigrationPath;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;

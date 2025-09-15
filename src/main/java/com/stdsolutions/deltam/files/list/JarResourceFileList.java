@@ -1,65 +1,49 @@
 package com.stdsolutions.deltam.files.list;
 
 import com.stdsolutions.deltam.files.FileList;
-import com.stdsolutions.deltam.files.MigrationPath;
 
 import java.io.IOException;
-import java.net.JarURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class JarResourceFileList implements FileList {
 
-    private final MigrationPath migrationPath;
+    private final URL migrationsUrl;
 
-    public JarResourceFileList(MigrationPath migrationPath) {
-        this.migrationPath = migrationPath;
+    public JarResourceFileList(URL migrationsUrl) {
+        this.migrationsUrl = migrationsUrl;
     }
 
     @Override
-    public List<String> values() {
-        try {
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            String resourcePath = migrationPath.toString();
-            URL migrationsUrl = classLoader.getResource(resourcePath);
-            
-            if (migrationsUrl == null) {
-                return List.of();
-            }
-            
-            return findMigrationFilesInJar(migrationsUrl, resourcePath);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to discover migration files from JAR", e);
+    public List<String> values() throws IOException, URISyntaxException {
+
+        URI uri = migrationsUrl.toURI();
+
+        if (!"jar".equals(uri.getScheme())) {
+            throw new IllegalStateException("Is not jar: " + uri.getScheme());
         }
-    }
 
-    private List<String> findMigrationFilesInJar(URL resource, String migrationsPath) throws IOException {
-        List<String> files = new ArrayList<>();
-        JarURLConnection jarConnection = (JarURLConnection) resource.openConnection();
 
-        try (JarFile jarFile = jarConnection.getJarFile()) {
-            String pathWithSlash = migrationsPath.endsWith("/") ? migrationsPath : migrationsPath + "/";
+        try (FileSystem fs = FileSystems.newFileSystem(uri, Collections.emptyMap())) {
+            String uriString = uri.toString();
+            String pathStr = uriString.substring(uriString.indexOf("!/") + 2);
+            Path path = fs.getPath("/" + pathStr);
 
-            Enumeration<JarEntry> entries = jarFile.entries();
-            while (entries.hasMoreElements()) {
-                JarEntry entry = entries.nextElement();
-                String entryName = entry.getName();
-
-                if (entryName.startsWith(pathWithSlash) &&
-                    !entry.isDirectory()) {
-
-                    String fileName = entryName.substring(pathWithSlash.length());
-                    if (!fileName.contains("/")) { // Only direct files, not subdirectories
-                        files.add(fileName);
-                    }
-                }
+            try (Stream<Path> paths = Files.list(path)) {
+                return paths.filter(Files::isRegularFile)
+                        .map(p -> p.getFileName().toString())
+                        .collect(Collectors.toList());
             }
         }
 
-        return files;
     }
 }

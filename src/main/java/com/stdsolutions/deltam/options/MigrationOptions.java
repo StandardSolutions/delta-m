@@ -24,7 +24,7 @@ public class MigrationOptions extends Options {
 
     public long lockId() {
         return UUID
-            .nameUUIDFromBytes("delta-m".getBytes(java.nio.charset.StandardCharsets.UTF_8))
+            .nameUUIDFromBytes("db/delta-m".getBytes(java.nio.charset.StandardCharsets.UTF_8))
             .getMostSignificantBits();
     }
 
@@ -51,7 +51,7 @@ public class MigrationOptions extends Options {
 
 
     public MigrationPath migrationPath() {
-        String migrationPath = map.getOrDefault("migration-path", "db/delta-m");
+        String migrationPath = map.getOrDefault("migration-path", "classpath:db/delta-m");
         return new SafePath(
                 new UnPrefixedPath(migrationPath)
         );

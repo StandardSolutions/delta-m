@@ -12,6 +12,7 @@ import com.stdsolutions.deltam.options.MigrationOptions;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,11 +34,10 @@ public final class MigrationLoader {
         this.databaseType = databaseType;
     }
 
-    public List<MigrationStep> steps() throws IOException {
+    public List<MigrationStep> steps() throws IOException, URISyntaxException {
         List<MigrationStep> migrations = new ArrayList<>();
 
         String migrationsPath = buildMigrationPath();
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
         MigrationPath dbSpecificPath = createDbSpecificPath(migrationsPath);
         FileList fileList = new SqlFilteredFileList(new FileListOf(dbSpecificPath).value());
