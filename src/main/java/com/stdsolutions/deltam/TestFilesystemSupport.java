@@ -34,14 +34,15 @@ public class TestFilesystemSupport {
         try {
             MigrationLoader loader = new MigrationLoader(options, dbType);
             var migrations = loader.steps();
-            
+
             System.out.println(label + " - Found " + migrations.size() + " migrations:");
             for (var migration : migrations) {
                 System.out.println("  - " + migration.id() + ": " + migration.description());
             }
-            
+
         } catch (Exception e) {
             System.out.println(label + " - Error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
