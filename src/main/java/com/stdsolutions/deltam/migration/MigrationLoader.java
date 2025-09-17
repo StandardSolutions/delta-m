@@ -104,7 +104,13 @@ public final class MigrationLoader {
     private String buildMigrationPath() {
         String basePath = options.migrationPath().toString();
         String dbTypePath = databaseType.name().toLowerCase();
-        return basePath + "/" + dbTypePath;
+
+        // Ensure proper path separator handling for all platforms
+        if (basePath.endsWith("/")) {
+            return basePath + dbTypePath;
+        } else {
+            return basePath + "/" + dbTypePath;
+        }
     }
     
     private MigrationPath createDbSpecificPath(String migrationsPath) {
