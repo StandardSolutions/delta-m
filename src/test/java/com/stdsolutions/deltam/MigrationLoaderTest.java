@@ -6,6 +6,7 @@ import com.stdsolutions.deltam.options.MigrationOptions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class MigrationLoaderTest {
 
     @Test
-    void testStepsFromResources() throws IOException {
+    void testStepsFromResources() throws IOException, URISyntaxException {
         MigrationOptions options = new MigrationOptions();
         MigrationLoader loader = new MigrationLoader(options, DatabaseType.H2);
 
@@ -33,7 +34,7 @@ class MigrationLoaderTest {
     }
 
     @Test
-    void testMigrationStepProperties() throws IOException {
+    void testMigrationStepProperties() throws IOException, URISyntaxException {
         MigrationOptions options = new MigrationOptions();
         MigrationLoader loader = new MigrationLoader(options, DatabaseType.H2);
 
@@ -48,9 +49,9 @@ class MigrationLoaderTest {
     }
 
     @Test
-    void testCustomMigrationsPath() throws IOException {
-        // Test custom migration path option
-        MigrationOptions options = new MigrationOptions("--migration-path=custom/migrations");
+    void testCustomMigrationsPath() throws IOException, URISyntaxException {
+        // Test custom migration path option with proper prefix
+        MigrationOptions options = new MigrationOptions("--migration-path=classpath:custom/migrations");
         MigrationLoader loader = new MigrationLoader(options, DatabaseType.H2);
 
         List<MigrationStep> migrations = loader.steps();
@@ -66,7 +67,7 @@ class MigrationLoaderTest {
     }
 
     @Test
-    void testTemplateProcessing() throws IOException {
+    void testTemplateProcessing() throws IOException, URISyntaxException {
         MigrationOptions options = new MigrationOptions();
         MigrationLoader loader = new MigrationLoader(options, DatabaseType.H2);
 
