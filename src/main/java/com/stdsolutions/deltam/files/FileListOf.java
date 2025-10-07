@@ -1,6 +1,7 @@
 package com.stdsolutions.deltam.files;
 
 import com.stdsolutions.deltam.files.list.FileListImpl;
+import com.stdsolutions.deltam.files.path.PathOf;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -17,30 +18,28 @@ public final class FileListOf {
 
     public FileList value() throws IOException, URISyntaxException {
         if (path.isFileSystem()) {
-            return new FileListImpl(path.value().toUri());
+            PathOf pathOf = new PathOf(path.value().toUri());
+            return new FileListImpl(pathOf);
         }
 
         if (path.isClasspath()) {
             String resourcePath = path.toString();
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            Enumeration<URL> resources = classLoader.getResources(resourcePath);
 
-            URL migrationsUrl = null;
-            if (resources.hasMoreElements()) {
-                migrationsUrl = resources.nextElement();
+            Enumeration<URL> resources = classLoader.getResources(resourcePath);
+            if (!resources.hasMoreElements()) {
+                return List::of;
             }
+
+            URL migrationsUrl = resources.nextElement();
 
             if (resources.hasMoreElements()) {
                 throw new IllegalStateException("Multiple resources found for path: " + resourcePath);
             }
 
-            if (migrationsUrl == null) {
-                return List::of;
-            }
-
             return switch (migrationsUrl.getProtocol()) {
-                case "file" -> new FileListImpl(path.value().toUri());
-                case "jar" -> new FileListImpl(migrationsUrl);
+                case "file" -> new FileListImpl(new PathOf(path.value().toUri()));
+                case "jar" -> new FileListImpl(new PathOf(migrationsUrl.toURI()));
                 default -> throw new IllegalStateException("Unsupported protocol: " + migrationsUrl.getProtocol());
             };
         }
