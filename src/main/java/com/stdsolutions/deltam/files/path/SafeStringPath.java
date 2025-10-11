@@ -18,7 +18,7 @@ import java.nio.file.Paths;
  * <p>All paths are normalized and converted to use forward slashes for consistency.
  * Only relative paths within the current directory tree are allowed.
  */
-public class SafePath implements MigrationPath {
+public class SafeStringPath implements MigrationPath {
 
     private final MigrationPath value;
 
@@ -28,7 +28,7 @@ public class SafePath implements MigrationPath {
      * @param migrationPath the path string to validate and sanitize
      * @throws IllegalArgumentException if the path is null, blank, contains traversal patterns, or is absolute
      */
-    public SafePath(final MigrationPath migrationPath) {
+    public SafeStringPath(final MigrationPath migrationPath) {
         checkEmptyPath(migrationPath.toString());
         checkTraversalPattern(migrationPath.toString());
         Path path = Paths.get(migrationPath.toString()).normalize();

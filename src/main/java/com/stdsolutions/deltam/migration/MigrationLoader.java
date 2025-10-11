@@ -5,8 +5,8 @@ import com.stdsolutions.deltam.files.FileList;
 import com.stdsolutions.deltam.files.FileListOf;
 import com.stdsolutions.deltam.files.MigrationPath;
 import com.stdsolutions.deltam.files.filter.SqlFilteredFileList;
-import com.stdsolutions.deltam.files.path.SafePath;
-import com.stdsolutions.deltam.files.path.UnPrefixedPath;
+import com.stdsolutions.deltam.files.path.SafeStringPath;
+import com.stdsolutions.deltam.files.path.UnprefixedStringPath;
 import com.stdsolutions.deltam.metadata.DatabaseType;
 import com.stdsolutions.deltam.options.MigrationOptions;
 
@@ -119,13 +119,13 @@ public final class MigrationLoader {
         
         if (originalPath.isFileSystem()) {
             // For filesystem paths, create a new path with filesystem: prefix
-            return new SafePath(new UnPrefixedPath("filesystem:" + migrationsPath));
+            return new SafeStringPath(new UnprefixedStringPath("filesystem:" + migrationsPath));
         } else if (originalPath.isClasspath()) {
             // For classpath paths, create a new path with classpath: prefix  
-            return new SafePath(new UnPrefixedPath("classpath:" + migrationsPath));
+            return new SafeStringPath(new UnprefixedStringPath("classpath:" + migrationsPath));
         } else {
             // For unprefixed paths, create without prefix (backward compatibility)
-            return new SafePath(new UnPrefixedPath(migrationsPath));
+            return new SafeStringPath(new UnprefixedStringPath(migrationsPath));
         }
     }
 
