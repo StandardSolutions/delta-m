@@ -6,11 +6,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 
-public final class UnPrefixedPath implements MigrationPath {
+public final class UnprefixedStringPath implements MigrationPath {
 
     private final String value;
 
-    public UnPrefixedPath(final String strPath) {
+    public UnprefixedStringPath(final String strPath) {
         this.value = strPath;
     }
 
