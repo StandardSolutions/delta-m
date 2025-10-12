@@ -1,5 +1,7 @@
 package com.stdsolutions.deltam.files.path;
 
+import com.stdsolutions.deltam.files.SingleValue;
+
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
@@ -12,7 +14,7 @@ import java.util.Collections;
  * creating and managing filesystem providers for JAR resources when necessary.
  * </p>
  */
-public class PathOf {
+public class PathOf implements SingleValue<Path> {
     private final URI uri;
 
     /**
@@ -33,14 +35,17 @@ public class PathOf {
      * </p>
      *
      * @return the Path corresponding to the URI
-     * @throws IOException if an I/O error occurs while creating the filesystem
      */
-    public Path value() throws IOException {
+    @Override
+    public Path value() {
+
         try {
             return Paths.get(uri);
         } catch (FileSystemNotFoundException nfe) {
             try (FileSystem fs = FileSystems.newFileSystem(uri, Collections.emptyMap())) {
                 return fs.provider().getPath(uri);
+            } catch (IOException ignored) {
+                return Path.of("");
             }
         }
     }
