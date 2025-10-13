@@ -18,16 +18,23 @@ public class FileListImpl implements FileList {
     }
 
     @Override
-    public List<String> values() throws IOException {
+    public List<Path> values() throws IOException {
 
         Path path = pathOf.value();
-        if (!Files.exists(path) || !Files.isDirectory(path)) {
-            return List.of();
+        System.out.println("1");
+        try {
+            if (!Files.exists(path) || !Files.isDirectory(path)) {
+                return List.of();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
+
+        System.out.println("2:" + path);
         try (Stream<Path> paths = Files.list(path)) {
+            System.out.println("3:" + path);
             return paths.filter(Files::isRegularFile)
-                    .map(p -> p.getFileName().toString())
                     .toList();
         }
     }

@@ -35,20 +35,23 @@ public final class MigrationLoader {
     }
 
     public List<MigrationStep> steps() throws IOException, URISyntaxException {
+        System.out.println("start steps");
         List<MigrationStep> migrations = new ArrayList<>();
 
         String migrationsPath = buildMigrationPath();
 
         MigrationPath dbSpecificPath = createDbSpecificPath(migrationsPath);
+        System.out.println("db spec path:" + dbSpecificPath);
         FileList fileList = new SqlFilteredFileList(new FileListOf(dbSpecificPath).value());
-        List<String> migrationFiles = fileList.values();
-
-        for (String fileName : migrationFiles) {
-            Matcher matcher = MIGRATION_FILE_PATTERN.matcher(fileName);
+        System.out.println("fileList:" + fileList);
+        List<Path> migrationFiles = fileList.values();
+        System.out.println("migrationFiles:" + migrationFiles);
+        for (Path filePath : migrationFiles) {
+            Matcher matcher = MIGRATION_FILE_PATTERN.matcher(filePath.toString());
             if (matcher.matches()) {
                 String migrationNumber = matcher.group(1);
                 String migrationName = matcher.group(2);
-                String content = loadMigrationContent(migrationsPath, fileName);
+                String content = loadMigrationContent(migrationsPath, filePath.toString());
                 String processedContent = processTemplate(content, options);
 
                 migrations.add(new SqlMigrationStep(

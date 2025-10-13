@@ -4,6 +4,7 @@ import com.stdsolutions.deltam.files.FileList;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.List;
 
 public class SqlFilteredFileList implements FileList {
@@ -15,10 +16,10 @@ public class SqlFilteredFileList implements FileList {
     }
 
     @Override
-    public List<String> values() throws IOException, URISyntaxException {
+    public List<Path> values() throws IOException, URISyntaxException {
         return fileList.values()
                 .stream()
-                .filter(path -> path.endsWith(".sql"))
+                .filter(path -> path.toString().endsWith(".sql"))
                 .toList();
     }
 }
